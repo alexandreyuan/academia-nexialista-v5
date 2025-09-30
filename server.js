@@ -537,6 +537,33 @@ app.get('/api/shared-context/:user_email', async (req, res) => {
   }
 });
 
+// Delete all conversations for a specific user
+app.delete('/api/conversations/:user_email', async (req, res) => {
+  try {
+    const { user_email } = req.params;
+
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user_email)) {
+      return res.status(400).json({ error: 'Formato de email inválido' });
+    }
+
+    const result = await pool.query(
+      'DELETE FROM agent_conversations WHERE user_email = $1 RETURNING *',
+      [user_email]
+    );
+
+    res.json({ 
+      success: true, 
+      deleted: result.rowCount,
+      message: `${result.rowCount} conversas deletadas com sucesso` 
+    });
+  } catch (error) {
+    console.error('Erro ao deletar conversas:', error);
+    res.status(500).json({ error: 'Erro ao deletar conversas' });
+  }
+});
+
 app.use(express.static('.'));
 
 app.get('/', (req, res) => {

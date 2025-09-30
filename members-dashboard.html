@@ -103,6 +103,9 @@
                             <span id="user-name" class="block text-sm font-semibold">Usuário</span>
                             <span id="user-email" class="block text-xs text-digital-clarity/60">email@example.com</span>
                         </div>
+                        <button onclick="clearMyHistory()" class="p-2 hover:bg-red-500/10 rounded-lg transition-colors" title="Limpar Histórico de Conversas">
+                            <i class="fas fa-trash-alt text-red-400"></i>
+                        </button>
                         <button onclick="logout()" class="p-2 hover:bg-gold-experience/10 rounded-lg transition-colors" title="Sair">
                             <i class="fas fa-sign-out-alt text-gold-experience"></i>
                         </button>
@@ -371,6 +374,48 @@
 
         function navigateToAgentConfig() {
             window.location.href = 'custom-agents.html';
+        }
+
+        // Clear conversation history function
+        async function clearMyHistory() {
+            const user = window.NexialistaAuth?.currentUser;
+            if (!user || !user.email) {
+                alert('Erro: usuário não identificado');
+                return;
+            }
+
+            const confirmMsg = `⚠️ ATENÇÃO!\n\nVocê está prestes a deletar TODAS as suas conversas com os agentes da Academia Nexialista e Prospera-IA.\n\nEsta ação é IRREVERSÍVEL!\n\nTotal de conversas será perdido permanentemente.\n\nDeseja continuar?`;
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            // Second confirmation for safety
+            if (!confirm('Tem certeza absoluta? Esta é sua última chance antes de deletar tudo!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/conversations/${encodeURIComponent(user.email)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert(`✅ Sucesso!\n\n${data.deleted} conversas foram deletadas.\n\nSeu histórico foi limpo completamente.`);
+                    // Opcional: recarregar a página
+                    // window.location.reload();
+                } else {
+                    alert(`❌ Erro ao deletar conversas:\n${data.error || 'Erro desconhecido'}`);
+                }
+            } catch (error) {
+                console.error('Erro ao limpar histórico:', error);
+                alert('❌ Erro de conexão ao tentar deletar conversas. Tente novamente.');
+            }
         }
 
         // Logout function
