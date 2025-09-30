@@ -356,17 +356,17 @@ function updateModelOptions() {
             { value: 'o4-mini-deep-research', label: 'o4-mini-deep-research' }
         ],
         openrouter: [
-            { value: 'openrouter/quasar-alpha', label: 'Quasar Alpha' },
-            { value: 'grok-code-fast-1', label: 'Grok Code Fast 1' },
-            { value: 'claude-sonnet-4', label: 'Claude Sonnet 4' },
-            { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-            { value: 'grok-4-fast-free', label: 'Grok 4 Fast (free)' },
-            { value: 'deepseek-v3.1-free', label: 'DeepSeek V3.1 (free)' },
-            { value: 'gemini-2.0-flash-experimental-free', label: 'Gemini 2.0 Flash Experimental (free)' },
-            { value: 'deepseek-v3-0324', label: 'DeepSeek V3 0324' },
-            { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-            { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
-            { value: 'gpt-5-mini', label: 'GPT-5 Mini' }
+            { value: 'anthropic/claude-4-sonnet-20250522', label: 'Claude 4 Sonnet' },
+            { value: 'anthropic/claude-3.7-sonnet', label: 'Claude 3.7 Sonnet' },
+            { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+            { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+            { value: 'openai/gpt-4.1', label: 'GPT-4.1' },
+            { value: 'openai/gpt-4.1-mini-2025-04-14', label: 'GPT-4.1 Mini' },
+            { value: 'openai/gpt-5-mini', label: 'GPT-5 Mini' },
+            { value: 'meta-llama/llama-4-maverick', label: 'Llama 4 Maverick (400B)' },
+            { value: 'meta-llama/llama-4-scout', label: 'Llama 4 Scout (109B)' },
+            { value: 'deepseek/deepseek-r1:free', label: 'DeepSeek R1 (free)' },
+            { value: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (free)' }
         ],
         groq: [
             { value: 'llama-3.3-70b', label: 'Llama 3.3 70B' },
@@ -403,6 +403,63 @@ function updateModelOptions() {
         option.textContent = model.label;
         modelSelect.appendChild(option);
     });
+}
+
+// Test API connections
+async function testApiConnections() {
+    const providers = [
+        { name: 'OpenAI', id: 'openai', key: document.getElementById('openai-key').value, endpoint: 'https://api.openai.com/v1/models', headers: (key) => ({ 'Authorization': `Bearer ${key}` }) },
+        { name: 'Groq', id: 'groq', key: document.getElementById('groq-key').value, endpoint: 'https://api.groq.com/openai/v1/models', headers: (key) => ({ 'Authorization': `Bearer ${key}` }) },
+        { name: 'Google', id: 'google', key: document.getElementById('google-key').value, endpoint: (key) => `https://generativelanguage.googleapis.com/v1beta/models?key=${key}`, headers: () => ({}) },
+        { name: 'OpenRouter', id: 'openrouter', key: document.getElementById('openrouter-key').value, endpoint: 'https://openrouter.ai/api/v1/models', headers: (key) => ({ 'Authorization': `Bearer ${key}` }) }
+    ];
+    
+    let results = [];
+    let testedCount = 0;
+    
+    for (const provider of providers) {
+        if (!provider.key || provider.key.trim() === '') {
+            results.push(`${provider.name}: ⚠️ Sem chave configurada`);
+            continue;
+        }
+        
+        testedCount++;
+        
+        try {
+            const endpoint = typeof provider.endpoint === 'function' ? provider.endpoint(provider.key) : provider.endpoint;
+            const headers = provider.headers(provider.key);
+            
+            const response = await fetch(endpoint, {
+                method: 'GET',
+                headers: headers
+            });
+            
+            if (response.ok) {
+                results.push(`${provider.name}: ✅ Conexão OK`);
+            } else {
+                const errorText = await response.text();
+                results.push(`${provider.name}: ❌ Erro ${response.status}`);
+                console.error(`${provider.name} error:`, errorText);
+            }
+        } catch (error) {
+            results.push(`${provider.name}: ❌ Falha na conexão`);
+            console.error(`${provider.name} exception:`, error);
+        }
+    }
+    
+    if (testedCount === 0) {
+        showToast('Configure ao menos uma chave de API para testar', 'error');
+        return;
+    }
+    
+    // Show results
+    const message = results.join('\n');
+    alert(`🔌 Resultado dos Testes:\n\n${message}`);
+    
+    const allSuccess = results.every(r => r.includes('✅') || r.includes('⚠️'));
+    if (allSuccess && testedCount > 0) {
+        showToast('Todas as conexões testadas estão funcionando!', 'success');
+    }
 }
 
 // Test agent by opening it in a new window
