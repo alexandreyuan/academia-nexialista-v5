@@ -6,6 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="version" content="1.1">
     <title>Academia Nexialista | Agentes de IA</title>
     
     <!-- Favicons -->
@@ -269,24 +270,50 @@
         // Load agents from server (server-first)
         async function loadAgents() {
             const debug = /[?&]debug=1/.test(window.location.search);
+            
+            // Check if there's a specific agent ID in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const specificAgentId = urlParams.get('agent');
 
             let __fetchStatus = 'pending'; let __fetchError = ''; let __path = 'relative';
             try {
                 const noCache = Date.now();
-                let res = await fetch(buildApiUrl(`tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
-                if (!res.ok) {
-                    __path = 'absolute';
-                    res = await fetch(buildApiUrl(`/tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
-                }
-                __fetchStatus = `HTTP ${res.status}`;
-                let list = [];
-                if (res.ok) {
-                    const json = await res.json();
-                    list = (json.data || []).filter(a => a && a.product === 'academia-nexialista' && (a.isActive !== false));
+                
+                // If specific agent requested, load only that one
+                if (specificAgentId) {
+                    console.log('Loading specific agent:', specificAgentId);
+                    let res = await fetch(buildApiUrl(`tables/custom_agents/${specificAgentId}?_=${noCache}`), { cache: 'no-store' });
+                    __fetchStatus = `HTTP ${res.status}`;
+                    
+                    if (res.ok) {
+                        const agent = await res.json();
+                        console.log('Agent loaded:', agent);
+                        agentsData = [agent];
+                    } else {
+                        __fetchError = await res.text();
+                        console.error('Error loading agent:', __fetchError);
+                        agentsData = [];
+                    }
                 } else {
-                    __fetchError = await res.text();
+                    // Load all agents
+                    let res = await fetch(buildApiUrl(`tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
+                    if (!res.ok) {
+                        __path = 'absolute';
+                        res = await fetch(buildApiUrl(`/tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
+                    }
+                    __fetchStatus = `HTTP ${res.status}`;
+                    let list = [];
+                    if (res.ok) {
+                        const json = await res.json();
+                        // O servidor retorna array direto, não { data: [...] }
+                        list = (Array.isArray(json) ? json : (json.data || [])).filter(a => a && a.product === 'academia-nexialista' && (a.is_active !== false));
+                        console.log('All agents loaded:', list.length);
+                    } else {
+                        __fetchError = await res.text();
+                    }
+                    agentsData = list;
                 }
-                agentsData = list;
+                
                 window.__academiaFetchDiag = { status: __fetchStatus, error: __fetchError, path: __path };
                 if (debug) {
                     const banner = document.getElementById('loading-agents');
