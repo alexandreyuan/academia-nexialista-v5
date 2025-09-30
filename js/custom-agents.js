@@ -48,20 +48,23 @@ function renderAgents() {
             <div class="flex items-start justify-between mb-4">
                 <div>
                     <h3 class="text-xl font-semibold text-gold-experience mb-2">${agent.name || 'Sem nome'}</h3>
-                    <p class="text-digital-clarity/70 text-sm">${agent.role || 'Especialista'}</p>
+                    <p class="text-digital-clarity/70 text-sm">${agent.provider || 'openai'} / ${agent.model || 'GPT-4'}</p>
                 </div>
                 <span class="px-3 py-1 bg-gold-experience/20 text-gold-experience text-xs rounded-full">
-                    ${agent.model || 'GPT-4'}
+                    Custom
                 </span>
             </div>
             <p class="text-digital-clarity/80 text-sm mb-4 line-clamp-3">${agent.description || 'Sem descrição'}</p>
             <div class="flex items-center justify-between pt-4 border-t border-gold-experience/20">
-                <span class="text-xs text-digital-clarity/50">${formatDate(agent.updated_at)}</span>
-                <div class="flex space-x-2">
-                    <button onclick="editAgent('${agent.id}')" class="text-gold-experience hover:text-gold-legacy transition-colors">
+                <button onclick="testAgentById('${agent.id}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors flex items-center space-x-2">
+                    <i class="fas fa-play"></i>
+                    <span>Testar</span>
+                </button>
+                <div class="flex space-x-3">
+                    <button onclick="editAgent('${agent.id}')" class="text-gold-experience hover:text-gold-legacy transition-colors p-2" title="Editar">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button onclick="deleteAgent('${agent.id}')" class="text-red-400 hover:text-red-500 transition-colors">
+                    <button onclick="deleteAgent('${agent.id}')" class="text-red-400 hover:text-red-500 transition-colors p-2" title="Excluir">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -400,4 +403,25 @@ function updateModelOptions() {
         option.textContent = model.label;
         modelSelect.appendChild(option);
     });
+}
+
+// Test agent by opening it in a new window
+function testAgentById(agentId) {
+    const agent = agents.find(a => a.id === agentId);
+    if (!agent) {
+        showToast('Agente não encontrado', 'error');
+        return;
+    }
+    
+    console.log('Testando agente:', agent);
+    
+    // Abrir página de chat com o agente em nova aba
+    // Salvar o agente no sessionStorage para a página de chat usar
+    sessionStorage.setItem('testAgent', JSON.stringify(agent));
+    
+    // Abrir em nova aba
+    const chatUrl = 'academia-nexialista.html?agent=' + encodeURIComponent(agentId);
+    window.open(chatUrl, '_blank');
+    
+    showToast(`Abrindo ${agent.name} para teste...`, 'success');
 }
