@@ -42,18 +42,24 @@
     <script>
         (function(){
             try {
-                var allowed = false;
-                if (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function') {
-                    allowed = window.NexialistaAuth.isAdmin();
+                // Verificar se o usuário está autenticado
+                const currentUser = localStorage.getItem('currentUser');
+                if (!currentUser) {
+                    window.location.href = 'members.html';
+                    return;
                 }
-                // Endurecer gate: também validar e-mail autorizado e role explícita
-                var u = window.NexialistaAuth && window.NexialistaAuth.currentUser;
-                var emailOk = u && Array.isArray(window.AUTHORIZED_ADMINS) && window.AUTHORIZED_ADMINS.includes(u.email);
-                var roleOk = u && (u.role === 'admin' || u.role === 'founder');
-                if (!(allowed && emailOk && roleOk)) {
+                
+                const user = JSON.parse(currentUser);
+                const isAdmin = (user.role === 'admin' || user.role === 'founder');
+                
+                // Verificação adicional com NexialistaAuth
+                const authCheck = window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function' && window.NexialistaAuth.isAdmin();
+                
+                if (!isAdmin && !authCheck) {
                     window.location.href = 'members-dashboard.html';
                 }
             } catch (e) {
+                console.error('Erro na verificação de admin:', e);
                 window.location.href = 'members-dashboard.html';
             }
         })();

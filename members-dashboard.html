@@ -283,20 +283,27 @@
             const user = JSON.parse(currentUserStr);
             document.getElementById('user-name').textContent = user.name || 'Usuário';
             document.getElementById('user-email').textContent = user.email;
-            document.getElementById('user-plan').textContent = getPlanDisplayName(user.plan);
+            document.getElementById('user-plan').textContent = getPlanDisplayName(user.subscription, user.role);
             
             // Load user stats
             loadUserStats(user.email);
         }
 
         // Get plan display name
-        function getPlanDisplayName(plan) {
+        function getPlanDisplayName(subscription, role) {
+            // Prioridade para role (founder/admin)
+            if (role === 'founder') return 'Founder';
+            if (role === 'admin') return 'Admin';
+            
             const planNames = {
+                'vip': 'VIP',
+                'premium': 'Premium',
+                'basic': 'Básico',
                 'nexus-explorer': 'Nexus Explorer',
                 'nexus-master': 'Nexus Master',
                 'nexus-infinity': 'Nexus Infinity'
             };
-            return planNames[plan] || 'Plano Básico';
+            return planNames[subscription] || 'Básico';
         }
 
         // Load user stats
