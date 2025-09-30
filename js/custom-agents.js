@@ -529,7 +529,7 @@ function updateModelOptions() {
             { value: 'o4-mini-deep-research', label: 'o4-mini-deep-research' }
         ],
         openrouter: [
-            { value: 'openrouter/quasar-alpha', label: 'Quasar Alpha' },
+            { value: 'openrouter/quasar-alpha', label: 'Quasar Alphaopenrouter/quasar-alpha' },
             { value: 'x-ai/grok-code-fast-1', label: 'x-AI: Grok Code Fast 1' },
             { value: 'anthropic/claude-sonnet-4', label: 'Anthropic: Claude Sonnet 4' },
             { value: 'google/gemini-2.5-flash', label: 'Google: Gemini 2.5 Flash' },
