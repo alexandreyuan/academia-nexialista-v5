@@ -389,6 +389,44 @@ app.delete('/tables/custom_agents/:id', async (req, res) => {
   }
 });
 
+// API Keys endpoints
+app.get('/tables/custom_agents_api_keys', async (req, res) => {
+  try {
+    const result = await pool.query(
+      'SELECT * FROM custom_agents_api_keys ORDER BY provider'
+    );
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar API keys:', error);
+    res.status(500).json({ error: 'Erro ao buscar API keys' });
+  }
+});
+
+app.post('/tables/custom_agents_api_keys', async (req, res) => {
+  try {
+    const { provider, api_key } = req.body;
+
+    if (!provider || !api_key) {
+      return res.status(400).json({ error: 'Provider e API key são obrigatórios' });
+    }
+
+    // Use UPSERT to insert or update if provider already exists
+    const result = await pool.query(
+      `INSERT INTO custom_agents_api_keys (provider, api_key, updated_at)
+       VALUES ($1, $2, CURRENT_TIMESTAMP)
+       ON CONFLICT (provider) 
+       DO UPDATE SET api_key = $2, updated_at = CURRENT_TIMESTAMP
+       RETURNING *`,
+      [provider, api_key]
+    );
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao salvar API key:', error);
+    res.status(500).json({ error: 'Erro ao salvar API key' });
+  }
+});
+
 app.use(express.static('.'));
 
 app.get('/', (req, res) => {
