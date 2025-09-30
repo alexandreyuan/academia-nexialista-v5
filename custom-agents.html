@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agentes IA Customizáveis - Academia Nexialista</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="assets/logo-nexialista.png">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nexus-deep': '#0A0A0A',
+                        'gold-experience': '#D4AF37',
+                        'nexus-power': '#1C1C1C',
+                        'digital-clarity': '#F5F5F5',
+                        'gold-legacy': '#B8860B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Auth System para gate de admin -->
+    <script src="js/auth-system.js"></script>
+    <script>
+        (function(){
+            try {
+                var allowed = false;
+                if (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function') {
+                    allowed = window.NexialistaAuth.isAdmin();
+                }
+                // Endurecer gate: também validar e-mail autorizado e role explícita
+                var u = window.NexialistaAuth && window.NexialistaAuth.currentUser;
+                var emailOk = u && Array.isArray(window.AUTHORIZED_ADMINS) && window.AUTHORIZED_ADMINS.includes(u.email);
+                var roleOk = u && (u.role === 'admin' || u.role === 'founder');
+                if (!(allowed && emailOk && roleOk)) {
+                    window.location.href = 'members-dashboard.html';
+                }
+            } catch (e) {
+                window.location.href = 'members-dashboard.html';
+            }
+        })();
+    </script>
+</head>
+<body class="font-inter bg-nexus-deep text-digital-clarity min-h-screen">
+
+    <!-- Page is now accessible directly for admin use -->
+
+    <!-- Navigation -->
+    <nav class="bg-nexus-power border-b border-gold-experience/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-3">
+                    <img src="assets/logo-nexialista.png" alt="Academia Nexialista" class="w-10 h-10 rounded-full">
+                    <span class="font-playfair font-semibold text-xl text-gold-experience">Agentes IA</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    
+                    <button onclick="showApiSettings()" class="text-digital-clarity hover:text-gold-experience transition-colors">
+                        <i class="fas fa-cog mr-2"></i>APIs
+                    </button>
+                    <button onclick="manualSyncNow()" class="text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-sync-now" title="Sincronizar agora com o servidor">
+                        <i class="fas fa-rotate mr-2"></i>Sincronizar agora
+                    </button>
+                    <button onclick="adminBackfillFromLocal()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-backfill" title="Migrar agentes do navegador para o servidor">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>Migrar do navegador
+                    </button>
+                    <button onclick="openExportModal()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-export" title="Exportar agentes (JSON)">
+                        <i class="fas fa-file-export mr-2"></i>Exportar JSON
+                    </button>
+                    <button onclick="openImportModal()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-import" title="Importar agentes (JSON)">
+                        <i class="fas fa-file-import mr-2"></i>Importar JSON
+                    </button>
+                    <button onclick="openApiDiagnostics()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-diagnostics" title="Diagnóstico da API">
+                        <i class="fas fa-stethoscope mr-2"></i>Diagnóstico API
+                    </button>
+                    <button onclick="createNewAgent()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold transition-colors">
+                        <i class="fas fa-plus mr-2"></i>Novo Agente
+                    </button>
+
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-playfair font-bold text-gold-experience mb-4">
+                🧠 Agentes IA Customizáveis
+            </h1>
+            <p class="text-digital-clarity/70 text-lg max-w-2xl mx-auto">
+                Crie e customize seus próprios agentes de IA com personalidades únicas, usando os melhores modelos do mercado
+            </p>
+        </div>
+
+        <!-- API Status Banner -->
+        <div id="api-status-banner" class="mb-6 p-4 rounded-lg border hidden">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                    <div id="api-status-icon"></div>
+                    <div id="api-status-text"></div>
+                </div>
+                <button onclick="showApiSettings()" class="text-sm underline opacity-70 hover:opacity-100">
+                    Configurar APIs
+                </button>
+            </div>
+        </div>
+
+        <!-- Agents Grid -->
+        <div id="agents-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+            <!-- Agent cards will be dynamically inserted here -->
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="text-center py-16 hidden">
+            <div class="max-w-md mx-auto">
+                <div class="w-24 h-24 mx-auto mb-6 rounded-full bg-nexus-power flex items-center justify-center">
+                    <i class="fas fa-robot text-3xl text-gold-experience/50"></i>
+                </div>
+                <h3 class="text-xl font-semibold mb-2">Nenhum agente criado ainda</h3>
+                <p class="text-digital-clarity/70 mb-6">Comece criando seu primeiro agente IA personalizado</p>
+                <button onclick="createNewAgent()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
+                    <i class="fas fa-plus mr-2"></i>Criar Primeiro Agente
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Agent Creation/Edit Modal -->
+    <div id="agent-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+        <div class="min-h-screen px-4 flex items-center justify-center">
+            <div class="bg-nexus-power border border-gold-experience/30 rounded-xl w-full max-w-4xl mx-auto shadow-2xl">
+                
+                <!-- Modal Header -->
+                <div class="border-b border-gold-experience/20 p-6">
+                    <div class="flex items-center justify-between">
+                        <h2 id="modal-title" class="text-2xl font-playfair font-bold text-gold-experience">
+                            🤖 Novo Agente IA
+                        </h2>
+                        <button onclick="closeAgentModal()" class="text-digital-clarity/70 hover:text-digital-clarity transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <form id="agent-form" class="space-y-6">
+                        
+                        <!-- Basic Info -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Nome do Agente</label>
+                                <input type="text" id="agent-name" name="name" 
+                                       class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                                       placeholder="Ex: Assistente de Marketing">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Avatar (Ícone)</label>
+                                <select id="agent-avatar" name="avatar" 
+                                        class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
+                                    <option value="fas fa-robot">🤖 Robot</option>
+                                    <option value="fas fa-user-tie">👔 Profissional</option>
+                                    <option value="fas fa-graduation-cap">🎓 Educador</option>
+                                    <option value="fas fa-lightbulb">💡 Criativo</option>
+                                    <option value="fas fa-chart-line">📊 Analista</option>
+                                    <option value="fas fa-code">💻 Desenvolvedor</option>
+                                    <option value="fas fa-palette">🎨 Designer</option>
+                                    <option value="fas fa-stethoscope">🩺 Médico</option>
+                                    <option value="fas fa-balance-scale">⚖️ Jurista</option>
+                                    <option value="fas fa-rocket">🚀 Inovador</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Description -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Descrição Breve</label>
+                            <input type="text" id="agent-description" name="description" 
+                                   class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                                   placeholder="Ex: Especialista em estratégias de marketing digital e criação de conteúdo">
+                        </div>
+
+                        <!-- Product and Subscription Classification -->
+                        <div class="border border-gold-experience/20 rounded-lg p-4 bg-nexus-deep/30">
+                            <h3 class="font-semibold mb-4 text-gold-experience flex items-center">
+                                <i class="fas fa-tags mr-2"></i>Classificação do Agente
+                            </h3>
+                            
+                            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                                <!-- Product -->
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Produto</label>
+                                    <select id="agent-product" name="product" onchange="updateSubscriptionOptions()"
+                                            class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
+                                        <option value="">Selecione um produto...</option>
+                                        <option value="prospera-ia">📈 Prospera-IA</option>
+                                        <option value="academia-nexialista">🎓 Academia Nexialista</option>
+                                        <option value="movimento-nexialista">🌍 Movimento Nexialista</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- Accessible Plans (Multiple Selection) -->
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">
+                                        Planos com Acesso
+                                        <span class="text-xs text-digital-clarity/60 ml-2">(Múltipla seleção)</span>
+                                    </label>
+                                    <div id="subscription-checkboxes" class="space-y-2 p-3 bg-nexus-deep border border-gold-experience/30 rounded-lg">
+                                        <label class="flex items-center space-x-3 cursor-pointer hover:bg-gold-experience/5 p-2 rounded transition-colors">
+                                            <input type="checkbox" name="accessiblePlans" value="basic" 
+                                                   class="w-4 h-4 text-gold-experience bg-nexus-power border-gold-experience/30 rounded focus:ring-gold-experience focus:ring-2">
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-blue-400">🔰</span>
+                                                <span class="text-sm font-medium">Básico</span>
+                                            </div>
+                                        </label>
+                                        
+                                        <label class="flex items-center space-x-3 cursor-pointer hover:bg-gold-experience/5 p-2 rounded transition-colors">
+                                            <input type="checkbox" name="accessiblePlans" value="premium" 
+                                                   class="w-4 h-4 text-gold-experience bg-nexus-power border-gold-experience/30 rounded focus:ring-gold-experience focus:ring-2">
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-purple-400">💎</span>
+                                                <span class="text-sm font-medium">Premium</span>
+                                            </div>
+                                        </label>
+                                        
+                                        <label class="flex items-center space-x-3 cursor-pointer hover:bg-gold-experience/5 p-2 rounded transition-colors">
+                                            <input type="checkbox" name="accessiblePlans" value="vip" 
+                                                   class="w-4 h-4 text-gold-experience bg-nexus-power border-gold-experience/30 rounded focus:ring-gold-experience focus:ring-2">
+                                            <div class="flex items-center space-x-2">
+                                                <span class="text-yellow-400">🌟</span>
+                                                <span class="text-sm font-medium">VIP</span>
+                                            </div>
+                                        </label>
+                                    </div>
+                                    
+                                    <!-- Quick Selection Buttons -->
+                                    <div class="mt-2 flex flex-wrap gap-2">
+                                        <button type="button" onclick="selectAllPlans()" 
+                                                class="text-xs px-3 py-1 bg-gold-experience/20 text-gold-experience rounded hover:bg-gold-experience/30 transition-colors">
+                                            Todos os Planos
+                                        </button>
+                                        <button type="button" onclick="selectPremiumUp()" 
+                                                class="text-xs px-3 py-1 bg-purple-600/20 text-purple-400 rounded hover:bg-purple-600/30 transition-colors">
+                                            Premium + VIP
+                                        </button>
+                                        <button type="button" onclick="selectVipOnly()" 
+                                                class="text-xs px-3 py-1 bg-yellow-600/20 text-yellow-400 rounded hover:bg-yellow-600/30 transition-colors">
+                                            Apenas VIP
+                                        </button>
+                                        <button type="button" onclick="clearAllPlans()" 
+                                                class="text-xs px-3 py-1 bg-red-600/20 text-red-400 rounded hover:bg-red-600/30 transition-colors">
+                                            Limpar Seleção
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Category -->
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">Categoria</label>
+                                    <select id="agent-category" name="category"
+                                            class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
+                                        <option value="Análise & Visão">Análise & Visão</option>
+                                        <option value="Estratégia">Estratégia</option>
+                                        <option value="Transformação">Transformação</option>
+                                        <option value="Construção">Construção</option>
+                                        <option value="Educação">Educação</option>
+                                        <option value="Navegação">Navegação</option>
+                                        <option value="Síntese">Síntese</option>
+                                        <option value="Comunidade">Comunidade</option>
+                                        <option value="Catálise">Catálise</option>
+                                        <option value="Personalizado">Personalizado</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- Subscription Info -->
+                            <div id="subscription-info" class="mt-4 p-3 bg-nexus-power/50 rounded-lg hidden">
+                                <div class="text-sm text-digital-clarity/70">
+                                    <div class="flex items-center space-x-2 mb-2">
+                                        <i class="fas fa-info-circle text-gold-experience"></i>
+                                        <span class="font-medium">Informações da Classificação</span>
+                                    </div>
+                                    <div id="subscription-details"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- AI Provider & Model -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Provedor de IA</label>
+                                <select id="agent-provider" name="provider" onchange="updateModelOptions()"
+                                        class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
+                                    <option value="">Selecione um provedor...</option>
+                                    <option value="openai">OpenAI (GPT-4, GPT-3.5)</option>
+                                    <option value="anthropic">Anthropic (Claude)</option>
+                                    <option value="google">Google (Gemini)</option>
+                                    <option value="openrouter">OpenRouter (Múltiplos modelos)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Modelo</label>
+                                <select id="agent-model" name="model" 
+                                        class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
+                                    <option value="">Primeiro selecione um provedor</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- System Prompt -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">
+                                System Prompt (Personalidade do Agente)
+                                <span class="text-xs text-digital-clarity/60 ml-2">Define como o agente se comporta</span>
+                            </label>
+                            <textarea id="agent-system-prompt" name="systemPrompt" rows="8"
+                                      class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none resize-none"
+                                      placeholder="Ex: Você é um especialista em marketing digital com 15 anos de experiência. Sua personalidade é entusiasta, criativa e sempre focada em resultados práticos. Você gosta de usar exemplos reais e sempre pergunta sobre o contexto específico do usuário antes de dar conselhos. Mantenha suas respostas objetivas mas inspiradoras."></textarea>
+                        </div>
+
+                        <!-- Advanced Settings -->
+                        <div class="border-t border-gold-experience/20 pt-6">
+                            <button type="button" onclick="toggleAdvancedSettings()" class="flex items-center space-x-2 text-gold-experience hover:text-gold-legacy transition-colors mb-4">
+                                <i id="advanced-icon" class="fas fa-chevron-right"></i>
+                                <span>Configurações Avançadas</span>
+                            </button>
+                            
+                            <div id="advanced-settings" class="hidden space-y-4">
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">
+                                            Temperatura (0.0 - 1.0)
+                                            <span class="text-xs text-digital-clarity/60">Criatividade das respostas</span>
+                                        </label>
+                                        <input type="range" id="agent-temperature" name="temperature" 
+                                               min="0" max="1" step="0.1" value="0.7"
+                                               class="w-full">
+                                        <div class="text-xs text-digital-clarity/60 mt-1">
+                                            <span>Preciso</span>
+                                            <span class="float-right">Criativo</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium mb-2">
+                                            Max Tokens
+                                            <span class="text-xs text-digital-clarity/60">Tamanho máximo da resposta</span>
+                                        </label>
+                                        <input type="number" id="agent-max-tokens" name="maxTokens" 
+                                               min="100" max="4000" value="1000"
+                                               class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
+                                    </div>
+                                </div>
+                                
+                                <!-- Knowledge Base -->
+                                <div>
+                                    <label class="block text-sm font-medium mb-2">
+                                        Base de Conhecimento (Opcional)
+                                        <span class="text-xs text-digital-clarity/60">Informações específicas que o agente deve conhecer</span>
+                                    </label>
+                                    <textarea id="agent-knowledge" name="knowledge" rows="6"
+                                              class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none resize-none"
+                                              placeholder="Ex: Nossa empresa foi fundada em 2020, temos 50 funcionários, nosso foco é e-commerce para pequenas empresas..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col sm:flex-row gap-4 pt-6 border-t border-gold-experience/20">
+                            <button type="button" onclick="testAgent()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-flask mr-2"></i>Testar Agente
+                            </button>
+                            <button type="submit" class="flex-1 bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-save mr-2"></i>Salvar Agente
+                            </button>
+                            <button type="button" onclick="deleteCurrentAgent()" id="btn-delete-agent" class="hidden bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-trash-alt mr-2"></i>Excluir Agente
+                            </button>
+                            <button type="button" onclick="closeAgentModal()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Modal -->
+    <div id="export-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+      <div class="min-h-screen px-4 flex items-center justify-center">
+        <div class="bg-nexus-power border border-gold-experience/30 rounded-xl w-full max-w-3xl mx-auto shadow-2xl">
+          <div class="border-b border-gold-experience/20 p-6 flex items-center justify-between">
+            <h2 class="text-2xl font-playfair font-bold text-gold-experience"><i class="fas fa-file-export mr-2"></i>Exportar Agentes (JSON)</h2>
+            <button onclick="closeExportModal()" class="text-digital-clarity/70 hover:text-digital-clarity"><i class="fas fa-times text-xl"></i></button>
+          </div>
+          <div class="p-6 space-y-4">
+            <p class="text-digital-clarity/70 text-sm">Copie o JSON abaixo e cole no editor do site publicado para importar seus agentes.</p>
+            <textarea id="export-json" class="w-full h-64 bg-nexus-deep border border-gold-experience/30 rounded-lg p-3 text-sm text-digital-clarity" readonly></textarea>
+            <div class="flex gap-3">
+              <button onclick="copyExportJSON()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold"><i class="fas fa-copy mr-2"></i>Copiar</button>
+              <button onclick="closeExportModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold">Fechar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div id="import-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+      <div class="min-h-screen px-4 flex items-center justify-center">
+        <div class="bg-nexus-power border border-gold-experience/30 rounded-xl w-full max-w-3xl mx-auto shadow-2xl">
+          <div class="border-b border-gold-experience/20 p-6 flex items-center justify-between">
+            <h2 class="text-2xl font-playfair font-bold text-gold-experience"><i class="fas fa-file-import mr-2"></i>Importar Agentes (JSON)</h2>
+            <button onclick="closeImportModal()" class="text-digital-clarity/70 hover:text-digital-clarity"><i class="fas fa-times text-xl"></i></button>
+          </div>
+          <div class="p-6 space-y-4">
+            <p class="text-digital-clarity/70 text-sm">Cole aqui o JSON exportado do outro ambiente e clique em Importar. Os agentes serão criados/atualizados no servidor atual.</p>
+            <textarea id="import-json" class="w-full h-64 bg-nexus-deep border border-gold-experience/30 rounded-lg p-3 text-sm text-digital-clarity" placeholder='[ {"id":"...","name":"...", ...} ]'></textarea>
+            <div id="import-progress" class="text-xs text-digital-clarity/60"></div>
+            <div class="flex gap-3">
+              <button onclick="importAgentsJSON()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold"><i class="fas fa-cloud-upload-alt mr-2"></i>Importar</button>
+              <button onclick="closeImportModal()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API Diagnostics Modal -->
+    <div id="api-diagnostics-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+      <div class="min-h-screen px-4 flex items-center justify-center">
+        <div class="bg-nexus-power border border-gold-experience/30 rounded-xl w-full max-w-4xl mx-auto shadow-2xl">
+          <div class="border-b border-gold-experience/20 p-6 flex items-center justify-between">
+            <h2 class="text-2xl font-playfair font-bold text-gold-experience"><i class="fas fa-stethoscope mr-2"></i>Diagnóstico da REST API</h2>
+            <button onclick="closeApiDiagnostics()" class="text-digital-clarity/70 hover:text-digital-clarity"><i class="fas fa-times text-xl"></i></button>
+          </div>
+          <div class="p-6 space-y-4">
+            <p class="text-sm text-digital-clarity/70">Executa uma bateria de chamadas GET/PUT/PATCH/POST/DELETE em rotas relativas e absolutas com headers/credentials. Útil para isolar bloqueios de WAF/CDN no ambiente publicado.</p>
+            <div class="flex gap-3">
+              <button onclick="runApiDiagnostics()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold"><i class="fas fa-play mr-2"></i>Rodar testes</button>
+              <button onclick="copyDiagOutput()" class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-semibold"><i class="fas fa-copy mr-2"></i>Copiar resultado</button>
+            </div>
+            <pre id="api-diag-output" class="w-full h-80 overflow-auto bg-nexus-deep border border-gold-experience/30 rounded-lg p-3 text-xs text-digital-clarity whitespace-pre-wrap"></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Modal -->
+    <div id="chat-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50">
+        <div class="min-h-screen px-4 flex items-center justify-center">
+            <div class="bg-nexus-power border border-gold-experience/30 rounded-xl w-full max-w-4xl max-h-[90vh] mx-auto shadow-2xl flex flex-col">
+                
+                <!-- Chat Header -->
+                <div class="border-b border-gold-experience/20 p-4 flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                        <div id="chat-agent-avatar" class="w-10 h-10 bg-gold-experience/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-gold-experience"></i>
+                        </div>
+                        <div>
+                            <h3 id="chat-agent-name" class="font-semibold text-digital-clarity">Agente IA</h3>
+                            <p id="chat-agent-model" class="text-xs text-digital-clarity/60">Carregando...</p>
+                        </div>
+                    </div>
+                    <button onclick="closeChatModal()" class="text-digital-clarity/70 hover:text-digital-clarity transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="chat-messages" class="flex-1 p-4 overflow-y-auto min-h-[400px] max-h-[500px]">
+                    <div class="text-center text-digital-clarity/60 py-8">
+                        Inicie uma conversa com o agente
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="border-t border-gold-experience/20 p-4">
+                    <div class="flex space-x-3">
+                        <input type="text" id="chat-input" 
+                               class="flex-1 px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                               placeholder="Digite sua mensagem..."
+                               onkeypress="handleChatKeyPress(event)">
+                        <button onclick="sendMessage()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Settings Modal -->
+    <div id="api-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 overflow-y-auto">
+        <div class="min-h-screen px-4 flex items-center justify-center">
+            <div class="bg-nexus-power border border-gold-experience/30 rounded-xl w-full max-w-2xl mx-auto shadow-2xl">
+                
+                <!-- Modal Header -->
+                <div class="border-b border-gold-experience/20 p-6">
+                    <div class="flex items-center justify-between">
+                        <h2 class="text-2xl font-playfair font-bold text-gold-experience">
+                            🔑 Configurações de API
+                        </h2>
+                        <button onclick="closeApiModal()" class="text-digital-clarity/70 hover:text-digital-clarity transition-colors">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Modal Content -->
+                <div class="p-6">
+                    <div class="mb-6">
+                        <p class="text-digital-clarity/70">
+                            Configure suas chaves de API para usar os agentes com provedores reais de IA.
+                        </p>
+                    </div>
+
+                    <form id="api-form" class="space-y-6">
+                        
+                        <!-- OpenAI -->
+                        <div class="border border-gold-experience/20 rounded-lg p-4">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-robot text-white text-sm"></i>
+                                </div>
+                                <h3 class="font-semibold">OpenAI</h3>
+                            </div>
+                            <input type="password" id="openai-key" name="openaiKey" 
+                                   class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                                   placeholder="sk-...">
+                        </div>
+
+                        <!-- Anthropic -->
+                        <div class="border border-gold-experience/20 rounded-lg p-4">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-brain text-white text-sm"></i>
+                                </div>
+                                <h3 class="font-semibold">Anthropic</h3>
+                            </div>
+                            <input type="password" id="anthropic-key" name="anthropicKey" 
+                                   class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                                   placeholder="sk-ant-...">
+                        </div>
+
+                        <!-- Google -->
+                        <div class="border border-gold-experience/20 rounded-lg p-4">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-search text-white text-sm"></i>
+                                </div>
+                                <h3 class="font-semibold">Google Gemini</h3>
+                            </div>
+                            <input type="password" id="google-key" name="googleKey" 
+                                   class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                                   placeholder="AIza...">
+                        </div>
+
+                        <!-- OpenRouter -->
+                        <div class="border border-gold-experience/20 rounded-lg p-4">
+                            <div class="flex items-center space-x-3 mb-3">
+                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-route text-white text-sm"></i>
+                                </div>
+                                <h3 class="font-semibold">OpenRouter</h3>
+                            </div>
+                            <input type="password" id="openrouter-key" name="openrouterKey" 
+                                   class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                                   placeholder="sk-or-...">
+                        </div>
+
+                        <!-- Actions -->
+                        <div class="flex flex-col sm:flex-row gap-4 pt-6">
+                            <button type="button" onclick="testApiConnections()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-plug mr-2"></i>Testar Conexões
+                            </button>
+                            <button type="submit" class="flex-1 bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
+                                <i class="fas fa-save mr-2"></i>Salvar Configurações
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page works without authentication - direct access enabled -->
+
+    <!-- JavaScript -->
+    <script src="js/utils.js"></script>
+    <script src="js/prospera-memory.js"></script>
+    <script src="js/custom-agents.js"></script>
+    <script>
+      // Exibir botões admin-only e log de diagnóstico de fetch
+      (function(){
+        try {
+          const isAdm = window.NexialistaAuth && window.NexialistaAuth.isAdmin && window.NexialistaAuth.isAdmin();
+          if (isAdm) {
+            const btn = document.getElementById('btn-sync-now'); if (btn) btn.classList.remove('hidden');
+            const b2 = document.getElementById('btn-backfill'); if (b2) b2.classList.remove('hidden');
+            const be = document.getElementById('btn-export'); if (be) be.classList.remove('hidden');
+            const bi = document.getElementById('btn-import'); if (bi) bi.classList.remove('hidden');
+            const bd = document.getElementById('btn-diagnostics'); if (bd) bd.classList.remove('hidden');
+          }
+          // Pequeno diagnóstico: tentar listar e logar no console
+          setTimeout(async () => {
+            try {
+              const noCache = Date.now();
+              const res = await fetch(buildApiUrl(`tables/custom_agents?limit=5&_=${noCache}`), { cache: 'no-store' });
+              console.log('tables/custom_agents diag:', res.status);
+              if (res.ok) {
+                const j = await res.json();
+                console.log('Registros (top 5):', (j.data||[]).length);
+              } else {
+                console.warn('Falha listar custom_agents:', await res.text());
+              }
+            } catch(e){ console.warn('Diag falhou', e); }
+          }, 200);
+        } catch(e) { /* silencioso */ }
+      })();
+
+      // API Diagnostics helpers
+      function openApiDiagnostics(){ const m = document.getElementById('api-diagnostics-modal'); if (m) m.classList.remove('hidden'); }
+      function closeApiDiagnostics(){ const m = document.getElementById('api-diagnostics-modal'); if (m) m.classList.add('hidden'); }
+      async function copyDiagOutput(){ try{ const el=document.getElementById('api-diag-output'); if (navigator.clipboard && window.isSecureContext) await navigator.clipboard.writeText(el.textContent||''); else { const r=document.createRange(); r.selectNode(el); const s=window.getSelection(); s.removeAllRanges(); s.addRange(r); document.execCommand('copy'); s.removeAllRanges(); } alert('Resultado copiado!'); } catch(e){ alert('Falhou ao copiar. Copie manualmente.'); } }
+    </script>
+    
+
+    
+</body>
+</html>

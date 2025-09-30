@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área de Membros | Academia Nexialista</title>
+    <meta name="description" content="Área exclusiva para alunos da Academia Nexialista com acesso a agentes de IA especializados">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="assets/logo-nexialista.png">
+    <link rel="apple-touch-icon" href="assets/logo-nexialista.png">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/members.css">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nexus-deep': '#0A0A0A',
+                        'gold-experience': '#D4AF37',
+                        'nexus-power': '#1C1C1C',
+                        'digital-clarity': '#F5F5F5',
+                        'gold-legacy': '#B8860B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-nexus-deep text-digital-clarity">
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="min-h-screen flex items-center justify-center bg-gradient-to-br from-nexus-deep via-nexus-power to-nexus-deep">
+        <div class="max-w-md w-full mx-4">
+            
+            <!-- Login Card -->
+            <div class="bg-nexus-power/80 backdrop-blur-sm border border-gold-experience/30 rounded-2xl p-8 shadow-2xl">
+                
+                <!-- Logo & Title -->
+                <div class="text-center mb-8">
+                    <img src="assets/logo-nexialista.png" alt="Academia Nexialista" class="w-16 h-16 mx-auto mb-4 rounded-full">
+                    <h1 class="font-playfair text-2xl font-bold text-digital-clarity mb-2">Área de Membros</h1>
+                    <p class="text-digital-clarity/70">Academia Nexialista - Acesso Exclusivo</p>
+                </div>
+                
+                <!-- Login Form -->
+                <form id="member-login-form" class="space-y-6">
+                    
+                    <div>
+                        <label for="login-email" class="block text-sm font-medium text-digital-clarity/80 mb-2">
+                            <i class="fas fa-envelope text-gold-experience mr-2"></i>E-mail do Aluno
+                        </label>
+                        <input 
+                            type="email" 
+                            id="login-email" 
+                            name="email" 
+                            required
+                            class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none transition-colors"
+                            placeholder="seu@email.com"
+                        >
+                    </div>
+                    
+                    <div>
+                        <label for="login-password" class="block text-sm font-medium text-digital-clarity/80 mb-2">
+                            <i class="fas fa-lock text-gold-experience mr-2"></i>Senha de Acesso
+                        </label>
+                        <div class="relative">
+                            <input 
+                                type="password" 
+                                id="login-password" 
+                                name="password" 
+                                required
+                                class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none transition-colors pr-12"
+                                placeholder="Digite sua senha"
+                            >
+                            <button type="button" onclick="togglePassword('login-password')" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-digital-clarity/50 hover:text-gold-experience">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center space-x-2 cursor-pointer">
+                            <input type="checkbox" id="remember-me" class="w-4 h-4 text-gold-experience bg-nexus-deep border border-gold-experience/30 rounded focus:ring-gold-experience">
+                            <span class="text-sm text-digital-clarity/70">Lembrar de mim</span>
+                        </label>
+                        <a href="#" class="text-sm text-gold-experience hover:text-gold-legacy">Esqueci a senha</a>
+                    </div>
+                    
+                    <button 
+                        type="submit" 
+                        class="w-full bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-bold py-3 px-6 rounded-lg transition-colors flex items-center justify-center space-x-2"
+                    >
+                        <i class="fas fa-sign-in-alt"></i>
+                        <span>Acessar Área de Membros</span>
+                    </button>
+                    
+                </form>
+                
+                <!-- Demo Access -->
+                <div class="mt-6 pt-6 border-t border-gold-experience/20">
+                    <p class="text-center text-sm text-digital-clarity/60 mb-4">
+                        Não tem acesso ainda?
+                    </p>
+                    <button 
+                        onclick="showDemoAccess()" 
+                        class="w-full border border-gold-experience/30 text-gold-experience hover:bg-gold-experience/10 font-semibold py-2 px-4 rounded-lg transition-colors text-sm"
+                    >
+                        <i class="fas fa-eye mr-2"></i>Ver Demo (Acesso Limitado)
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Back to Landing -->
+            <div class="text-center mt-6">
+                <a href="index.html" class="text-digital-clarity/60 hover:text-gold-experience text-sm">
+                    <i class="fas fa-arrow-left mr-2"></i>Voltar para a Página Principal
+                </a>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Members Dashboard -->
+    <div id="members-dashboard" class="hidden min-h-screen bg-nexus-deep">
+        
+        <!-- Dashboard Header -->
+        <header class="bg-nexus-power border-b border-gold-experience/20 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    
+                    <!-- Logo & Title -->
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <img src="assets/logo-nexialista.png" alt="Academia Nexialista" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full">
+                        <div class="min-w-0 flex-1">
+                            <h1 class="font-playfair text-base sm:text-lg font-semibold text-digital-clarity truncate">Área de Membros</h1>
+                            <p class="text-xs text-digital-clarity/60 hidden sm:block">Academia Nexialista</p>
+                        </div>
+                    </div>
+                    
+                    <!-- User Info & Actions -->
+                    <div class="flex items-center space-x-2 sm:space-x-4">
+                        <div class="text-right hidden md:block">
+                            <p class="text-sm font-medium text-digital-clarity truncate max-w-[100px] lg:max-w-none" id="user-name">Carregando...</p>
+                            <p class="text-xs text-gold-experience" id="user-level">Nexialista Iniciado</p>
+                        </div>
+                        
+                        <div class="w-7 h-7 sm:w-8 sm:h-8 bg-gold-experience rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-nexus-deep text-xs sm:text-sm"></i>
+                        </div>
+                        <button onclick="logout()" class="text-digital-clarity/60 hover:text-gold-experience p-1">
+                            <i class="fas fa-sign-out-alt text-sm"></i>
+                        </button>
+                    </div>
+                    
+                </div>
+            </div>
+        </header>
+        
+        <!-- Dashboard Content -->
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            
+            <!-- Welcome Section -->
+            <div class="mb-8">
+                <div class="bg-gradient-to-r from-gold-experience/10 to-gold-legacy/10 border border-gold-experience/30 rounded-2xl p-6">
+                    <h2 class="font-playfair text-2xl font-bold text-digital-clarity mb-2">
+                        Bem-vindo(a) de volta! 🚀
+                    </h2>
+                    <p class="text-digital-clarity/80">
+                        Acesse seus agentes de IA especializados e continue sua jornada nexialista.
+                    </p>
+                    
+                    <!-- Products Dashboard -->
+                    <div id="products-dashboard" class="mt-4 space-y-3">
+                        <!-- Products will be loaded dynamically based on user subscription -->
+                    </div>
+                </div>
+            </div>
+            
+
+            
+            <!-- Meus Agentes Prospera-IA (Dinâmico) -->
+            <div class="mb-8">
+                <div class="flex items-center justify-between mb-4">
+                    <h2 class="font-semibold text-digital-clarity flex items-center">
+                        <i class="fas fa-robot text-gold-experience mr-2"></i> Seus Agentes Prospera-IA
+                    </h2>
+                    <a href="prospera-ia.html" class="text-sm text-gold-experience hover:text-gold-legacy">Ver todos</a>
+                </div>
+                <div id="prospera-preview-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                <div id="prospera-preview-empty" class="hidden text-center p-6 bg-nexus-power border border-gold-experience/20 rounded-xl">
+                    <div class="w-12 h-12 mx-auto mb-3 rounded-full bg-nexus-deep flex items-center justify-center">
+                        <i class="fas fa-ghost text-gold-experience/60"></i>
+                    </div>
+                    <p class="text-digital-clarity/70">Nenhum agente Prospera-IA disponível para o seu plano.</p>
+                    <a href="prospera-ia.html" class="mt-3 inline-block text-sm text-gold-experience hover:text-gold-legacy">Abrir Prospera-IA</a>
+                </div>
+            </div>
+            
+            <!-- Seção dinâmica substitui progresso e ações fictícias -->
+            <div class="bg-nexus-power border border-gold-experience/20 rounded-xl p-6 mb-8">
+                <h3 class="font-semibold text-digital-clarity mb-1 flex items-center">
+                    <i class="fas fa-info-circle text-gold-experience mr-2"></i>
+                    Dica
+                </h3>
+                <p class="text-sm text-digital-clarity/70">
+                    Explore e converse com seus agentes reais do Prospera-IA. Para criar ou editar agentes, use "Agentes IA" e marque o produto como Prospera-IA.
+                </p>
+            </div>
+            
+        </main>
+        
+    </div>
+
+    <!-- AI Agent Chat Modal -->
+    <div id="agent-chat-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-2 sm:p-4">
+            <div class="bg-nexus-power border border-gold-experience/30 rounded-2xl w-full max-w-4xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
+                
+                <!-- Modal Header -->
+                <div class="bg-nexus-deep border-b border-gold-experience/30 p-6 flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-gold-experience text-xl" id="agent-icon"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-playfair text-2xl font-bold text-digital-clarity" id="agent-name">Agente IA</h3>
+                            <p class="text-digital-clarity/70" id="agent-description">Seu assistente nexialista</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-2">
+                        <div class="relative">
+                            <button onclick="toggleHistoryMenu()" class="text-digital-clarity/60 hover:text-digital-clarity p-2 rounded-lg hover:bg-nexus-power transition-colors" title="Gerenciar Histórico">
+                                <i class="fas fa-history"></i>
+                            </button>
+                            <div id="history-menu" class="hidden absolute right-0 top-12 bg-nexus-power border border-gold-experience/20 rounded-lg shadow-xl z-10 min-w-48">
+                                <div class="p-2">
+                                    <button onclick="clearCurrentAgentHistory()" class="w-full text-left px-3 py-2 text-red-400 hover:bg-nexus-deep rounded-lg transition-colors text-sm">
+                                        <i class="fas fa-trash mr-2"></i>Limpar Histórico
+                                    </button>
+                                    <button onclick="exportCurrentAgentHistory()" class="w-full text-left px-3 py-2 text-digital-clarity hover:bg-nexus-deep rounded-lg transition-colors text-sm">
+                                        <i class="fas fa-download mr-2"></i>Exportar Chat
+                                    </button>
+                                    <div class="border-t border-gold-experience/20 my-2"></div>
+                                    <div class="px-3 py-2 text-xs text-digital-clarity/60" id="history-stats">
+                                        Carregando...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button onclick="hideAgentChat()" class="text-digital-clarity/70 hover:text-digital-clarity p-2">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Chat Interface -->
+                <div class="h-96 overflow-y-auto p-6 space-y-4" id="agent-chat-container">
+                    <!-- Messages will be added here -->
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="border-t border-gold-experience/30 p-6">
+                    <div class="flex space-x-4">
+                        <input 
+                            type="text" 
+                            id="agent-chat-input" 
+                            placeholder="Digite sua mensagem..."
+                            class="flex-1 px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                        >
+                        <button 
+                            onclick="sendAgentMessage()" 
+                            class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-6 py-3 rounded-lg transition-colors"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authentication System -->
+    <script src="js/auth-system.js"></script>
+    
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+    <script src="js/members.js"></script>
+    
+</body>
+</html>

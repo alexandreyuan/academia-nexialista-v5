@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | Academia Nexialista</title>
+    <meta name="description" content="Área exclusiva para alunos da Academia Nexialista com acesso a agentes de IA especializados">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="assets/logo-nexialista.png">
+    <link rel="apple-touch-icon" href="assets/logo-nexialista.png">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nexus-deep': '#0A0A0A',
+                        'gold-experience': '#D4AF37',
+                        'nexus-power': '#1C1C1C',
+                        'digital-clarity': '#F5F5F5',
+                        'gold-legacy': '#B8860B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Animações e estilos customizados */
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px) scale(1.02);
+        }
+
+        .gradient-border {
+            background: linear-gradient(135deg, #D4AF37, #B8860B);
+            padding: 2px;
+        }
+
+        .pulse-gold {
+            animation: pulse-gold 2s infinite;
+        }
+
+        @keyframes pulse-gold {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            }
+            50% {
+                box-shadow: 0 0 40px rgba(212, 175, 55, 0.5);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-nexus-deep text-digital-clarity min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="bg-nexus-power border-b border-gold-experience/30 sticky top-0 z-50 backdrop-blur-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Logo & Title -->
+                <div class="flex items-center space-x-3">
+                    <img src="assets/logo-nexialista.png" alt="Academia Nexialista" class="w-10 h-10 rounded-full">
+                    <div>
+                        <span class="font-playfair font-bold text-lg text-gold-experience">Academia Nexialista</span>
+                        <span class="block text-xs text-digital-clarity/60">Área de Membros</span>
+                    </div>
+                </div>
+                
+                <!-- User Info & Actions -->
+                <div class="flex items-center space-x-6">
+                    <!-- User Plan Badge -->
+                    <div class="hidden sm:flex items-center space-x-2 px-3 py-1 bg-gold-experience/10 border border-gold-experience/30 rounded-full">
+                        <i class="fas fa-crown text-gold-experience text-sm"></i>
+                        <span id="user-plan" class="text-sm font-medium text-gold-experience">Carregando...</span>
+                    </div>
+                    
+                    <!-- User Menu -->
+                    <div class="flex items-center space-x-4">
+                        <div class="text-right hidden sm:block">
+                            <span id="user-name" class="block text-sm font-semibold">Usuário</span>
+                            <span id="user-email" class="block text-xs text-digital-clarity/60">email@example.com</span>
+                        </div>
+                        <button onclick="logout()" class="p-2 hover:bg-gold-experience/10 rounded-lg transition-colors" title="Sair">
+                            <i class="fas fa-sign-out-alt text-gold-experience"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Welcome Section -->
+        <div class="mb-10 text-center">
+            <h1 class="text-4xl md:text-5xl font-playfair font-bold mb-4">
+                <span class="bg-gradient-to-r from-gold-experience to-gold-legacy bg-clip-text text-transparent">
+                    Bem-vindo ao Ecossistema Nexialista
+                </span>
+            </h1>
+            <p class="text-lg text-digital-clarity/70 max-w-2xl mx-auto">
+                Explore ferramentas de IA avançadas, conecte-se com a comunidade e transforme sua mentalidade com o pensamento transmitemático
+            </p>
+        </div>
+
+        <!-- Main Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            
+            <!-- Card 1: Academia Nexialista -->
+            <div class="gradient-border rounded-2xl">
+                <div class="bg-nexus-power rounded-2xl p-6 card-hover cursor-pointer h-full" onclick="navigateToAcademia()">
+                    <div class="flex flex-col h-full">
+                        <!-- Icon -->
+                        <div class="w-16 h-16 bg-gradient-to-br from-gold-experience to-gold-legacy rounded-xl flex items-center justify-center mb-4 pulse-gold">
+                            <i class="fas fa-brain text-2xl text-nexus-deep"></i>
+                        </div>
+                        
+                        <!-- Content -->
+                        <h3 class="text-xl font-playfair font-bold text-gold-experience mb-2">
+                            Academia Nexialista
+                        </h3>
+                        <p class="text-digital-clarity/70 mb-4 flex-grow">
+                            Acesse agentes de IA especializados em pensamento nexialista, cada um com expertise única para expandir sua consciência transmatemática
+                        </p>
+                        
+                        <!-- Access Info -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gold-experience/20">
+                            <span class="text-xs text-digital-clarity/50">
+                                <i class="fas fa-lock-open text-gold-experience mr-1"></i>
+                                Acesso por plano
+                            </span>
+                            <span class="text-gold-experience">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 2: Comunidade Movimento Nexialista -->
+            <div class="gradient-border rounded-2xl">
+                <div class="bg-nexus-power rounded-2xl p-6 card-hover cursor-pointer h-full" onclick="navigateToCommunity()">
+                    <div class="flex flex-col h-full">
+                        <!-- Icon -->
+                        <div class="w-16 h-16 bg-gradient-to-br from-gold-experience to-gold-legacy rounded-xl flex items-center justify-center mb-4 pulse-gold">
+                            <i class="fas fa-users text-2xl text-nexus-deep"></i>
+                        </div>
+                        
+                        <!-- Content -->
+                        <h3 class="text-xl font-playfair font-bold text-gold-experience mb-2">
+                            Movimento Nexialista
+                        </h3>
+                        <p class="text-digital-clarity/70 mb-4 flex-grow">
+                            Conecte-se com mentes brilhantes, compartilhe insights transmatemáticos e faça parte da revolução do pensamento integrado
+                        </p>
+                        
+                        <!-- Access Info -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gold-experience/20">
+                            <span class="text-xs text-digital-clarity/50">
+                                <i class="fas fa-external-link-alt text-gold-experience mr-1"></i>
+                                Comunidade externa
+                            </span>
+                            <span class="text-gold-experience">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card 3: Prospera-IA -->
+            <div class="gradient-border rounded-2xl">
+                <div class="bg-nexus-power rounded-2xl p-6 card-hover cursor-pointer h-full" onclick="navigateToProsperaIA()">
+                    <div class="flex flex-col h-full">
+                        <!-- Icon -->
+                        <div class="w-16 h-16 bg-gradient-to-br from-gold-experience to-gold-legacy rounded-xl flex items-center justify-center mb-4 pulse-gold">
+                            <i class="fas fa-rocket text-2xl text-nexus-deep"></i>
+                        </div>
+                        
+                        <!-- Content -->
+                        <h3 class="text-xl font-playfair font-bold text-gold-experience mb-2">
+                            Prospera-IA
+                        </h3>
+                        <p class="text-digital-clarity/70 mb-4 flex-grow">
+                            Método revolucionário com 4 agentes especializados para transformar sua jornada empreendedora através da inteligência artificial
+                        </p>
+                        
+                        <!-- Access Info -->
+                        <div class="flex items-center justify-between pt-4 border-t border-gold-experience/20">
+                            <span class="text-xs text-digital-clarity/50">
+                                <i class="fas fa-magic text-gold-experience mr-1"></i>
+                                4 Agentes exclusivos
+                            </span>
+                            <span class="text-gold-experience">
+                                <i class="fas fa-arrow-right"></i>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="bg-nexus-power/50 backdrop-blur-sm border border-gold-experience/20 rounded-2xl p-6">
+            <h2 class="text-lg font-playfair font-bold text-gold-experience mb-4">
+                <i class="fas fa-chart-line mr-2"></i>Seu Progresso Nexialista
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <!-- Stat 1 -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-gold-experience mb-1" id="total-interactions">0</div>
+                    <div class="text-sm text-digital-clarity/60">Interações com Agentes</div>
+                </div>
+                <!-- Stat 2 -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-gold-experience mb-1" id="active-days">0</div>
+                    <div class="text-sm text-digital-clarity/60">Dias Ativos</div>
+                </div>
+                <!-- Stat 3 -->
+                <div class="text-center">
+                    <div class="text-3xl font-bold text-gold-experience mb-1" id="insights-generated">0</div>
+                    <div class="text-sm text-digital-clarity/60">Insights Gerados</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-16 bg-nexus-power border-t border-gold-experience/20 py-8">
+        <div class="max-w-7xl mx-auto px-4 text-center">
+            <p class="text-digital-clarity/50 text-sm">
+                © 2024 Academia Nexialista. Expandindo consciências através do pensamento transmatemático.
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // Check authentication and load user data
+        function checkAuth() {
+            let currentUserStr = localStorage.getItem('currentUser');
+            if (!currentUserStr) {
+                // Fallback: se existir sessão da área de membros, reconstituir currentUser e seguir
+                const sessStr = localStorage.getItem('nexus_member_session') || sessionStorage.getItem('nexus_member_session');
+                if (sessStr) {
+                    try {
+                        const sess = JSON.parse(sessStr);
+                        if (sess && sess.user) {
+                            localStorage.setItem('currentUser', JSON.stringify(sess.user));
+                            currentUserStr = JSON.stringify(sess.user);
+                        }
+                    } catch(e) { /* ignore */ }
+                }
+            }
+            if (!currentUserStr) {
+                window.location.href = 'members.html';
+                return;
+            }
+            
+            const user = JSON.parse(currentUserStr);
+            document.getElementById('user-name').textContent = user.name || 'Usuário';
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-plan').textContent = getPlanDisplayName(user.plan);
+            
+            // Load user stats
+            loadUserStats(user.email);
+        }
+
+        // Get plan display name
+        function getPlanDisplayName(plan) {
+            const planNames = {
+                'nexus-explorer': 'Nexus Explorer',
+                'nexus-master': 'Nexus Master',
+                'nexus-infinity': 'Nexus Infinity'
+            };
+            return planNames[plan] || 'Plano Básico';
+        }
+
+        // Load user stats
+        function loadUserStats(userEmail) {
+            // Load stats from localStorage
+            const stats = JSON.parse(localStorage.getItem('userStats_' + userEmail) || '{}');
+            
+            document.getElementById('total-interactions').textContent = stats.totalInteractions || 0;
+            document.getElementById('active-days').textContent = stats.activeDays || 0;
+            document.getElementById('insights-generated').textContent = stats.insightsGenerated || 0;
+        }
+
+        // Navigation functions
+        function navigateToAcademia() {
+            window.location.href = 'academia-nexialista.html';
+        }
+
+        function navigateToCommunity() {
+            // URL da comunidade externa - será definido posteriormente
+            const communityUrl = localStorage.getItem('communityUrl') || '#';
+            if (communityUrl !== '#') {
+                window.open(communityUrl, '_blank');
+            } else {
+                alert('🔗 O link da comunidade será disponibilizado em breve!');
+            }
+        }
+
+        function navigateToProsperaIA() {
+            window.location.href = 'prospera-ia.html';
+        }
+
+        // Logout function
+        function logout() {
+            if (confirm('Deseja realmente sair da área de membros?')) {
+                try {
+                    localStorage.removeItem('currentUser');
+                    sessionStorage.removeItem('currentUser');
+                } catch(e) {}
+                try {
+                    localStorage.removeItem('nexus_member_session');
+                    sessionStorage.removeItem('nexus_member_session');
+                } catch(e) {}
+                try {
+                    if (window.NexialistaAuth && typeof window.NexialistaAuth.logout === 'function') {
+                        window.NexialistaAuth.logout();
+                    }
+                } catch(e) {}
+                window.location.replace('members.html');
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+
+    <!-- Admin FAB: acesso rápido ao Editor de Agentes -->
+    <script>
+      (function(){
+        function isAdminFounder(){
+          try {
+            if (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin==='function' && window.NexialistaAuth.isAdmin()) return true;
+            const u = window.NexialistaAuth && window.NexialistaAuth.currentUser;
+            if (u && (u.role==='admin' || u.role==='founder' || u.type==='admin')) return true;
+            const s = localStorage.getItem('nexialista_admin_session');
+            if (s){ const sess = JSON.parse(s); if (sess && sess.expires && sess.expires > Date.now()) return true; }
+          } catch(e){}
+          return false;
+        }
+        function mountAdminFab(){
+          if (!isAdminFounder()) return;
+          if (document.getElementById('admin-fab-editor')) return;
+          const btn = document.createElement('button');
+          btn.id = 'admin-fab-editor';
+          btn.className = 'fixed bottom-6 right-6 z-50 rounded-full shadow-lg bg-gold-experience text-nexus-deep w-12 h-12 flex items-center justify-center hover:bg-gold-legacy transition-colors';
+          btn.title = 'Editor de Agentes';
+          btn.innerHTML = '<i class="fas fa-wrench"></i>';
+          btn.addEventListener('click', function(){ window.location.href = 'custom-agents.html'; });
+          document.body.appendChild(btn);
+        }
+        document.addEventListener('DOMContentLoaded', mountAdminFab);
+      })();
+    </script>
+</body>
+</html>

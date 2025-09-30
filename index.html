@@ -1,0 +1,1617 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia Nexialista | Transforme Sua Experiência em Legado Digital</title>
+    <meta name="description" content="Para profissionais experientes que querem transformar décadas de conhecimento em ativos digitais prósperos através do Método PROSPERA-IA">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="assets/logo-nexialista.png">
+    <link rel="apple-touch-icon" href="assets/logo-nexialista.png">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'nexus-deep': '#0A0A0A',
+                        'gold-experience': '#D4AF37',
+                        'nexus-power': '#1C1C1C',
+                        'digital-clarity': '#F5F5F5',
+                        'gold-legacy': '#B8860B'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                        'playfair': ['Playfair Display', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="font-inter bg-nexus-deep text-digital-clarity">
+    
+    <!-- Navigation -->
+    <nav class="fixed top-0 w-full z-50 bg-nexus-deep/95 backdrop-blur-sm border-b border-gold-experience/20">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <img src="assets/logo-nexialista.png" alt="Academia Nexialista Logo" class="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover logo-nexialista">
+                    <span class="font-playfair font-semibold text-lg sm:text-xl truncate max-w-[140px] sm:max-w-none">Academia Nexialista</span>
+                </div>
+                <div class="hidden md:flex space-x-4 lg:space-x-6 items-center">
+                    <a href="#trilhas" class="text-digital-clarity hover:text-gold-experience transition-colors">Trilhas</a>
+                    <a href="#movimento" class="text-digital-clarity hover:text-gold-experience transition-colors">Movimento</a>
+                    <a href="#metodo" class="text-digital-clarity hover:text-gold-experience transition-colors">PROSPERA-IA</a>
+                    <a href="#precos" class="text-digital-clarity hover:text-gold-experience transition-colors">Preços</a>
+                    <a href="#" id="nav-agentes-link" class="text-digital-clarity hover:text-gold-experience transition-colors flex items-center space-x-1">
+                        <i class="fas fa-robot text-sm"></i>
+                        <span>Agentes IA</span>
+                    </a>
+                    <a href="#yuan" class="text-digital-clarity hover:text-gold-experience transition-colors">Yuan</a>
+                    <a href="#newsletter" class="text-digital-clarity hover:text-gold-experience transition-colors">Cadastre-se</a>
+                    <a href="members.html" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-3 lg:px-4 py-2 rounded-lg font-semibold transition-colors text-xs lg:text-sm flex items-center space-x-1">
+                        <i class="fas fa-lock text-xs lg:text-sm"></i>
+                        <span class="hidden lg:inline">Área de</span> <span>Membros</span>
+                    </a>
+                </div>
+                <button class="md:hidden text-digital-clarity" id="mobile-menu-btn">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Mobile Menu -->
+        <div class="md:hidden hidden" id="mobile-menu">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-nexus-power">
+                <a href="#trilhas" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Trilhas</a>
+                <a href="#movimento" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Movimento</a>
+                <a href="#metodo" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">PROSPERA-IA</a>
+                <a href="#precos" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Preços</a>
+                <a href="#" id="mobile-agentes-link" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">
+                    <i class="fas fa-robot mr-2"></i>Agentes IA
+                </a>
+                <a href="#yuan" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Yuan</a>
+                <a href="#newsletter" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Cadastre-se</a>
+                <div class="px-3 py-2">
+                    <a href="members.html" class="w-full bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold transition-colors text-sm flex items-center justify-center space-x-2">
+                        <i class="fas fa-lock"></i>
+                        <span>Área de Membros</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+<script>
+  // Menu inteligente: direciona Agentes IA para o editor se admin; para login admin caso contrário
+  (function(){
+    function isAdmin(){
+      try {
+        if (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function') {
+          return window.NexialistaAuth.isAdmin();
+        }
+        // fallback: sessão admin local
+        const s = localStorage.getItem('nexialista_admin_session');
+        if (!s) return false;
+        const session = JSON.parse(s);
+        return session && session.expires && session.expires > Date.now();
+      } catch(e){ return false; }
+    }
+
+    function smartNavigate(evt){
+      evt.preventDefault();
+      const target = isAdmin() ? 'custom-agents.html' : 'admin-auth.html';
+      window.location.href = target;
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      // Desktop link
+      const desktop = document.getElementById('nav-agentes-link');
+      if (desktop) desktop.addEventListener('click', smartNavigate);
+      // Mobile link
+      const mobile = document.getElementById('mobile-agentes-link');
+      if (mobile) mobile.addEventListener('click', smartNavigate);
+    });
+  })();
+</script>
+    
+    <!-- Hero Section -->
+    <section class="pt-16 pb-12 sm:pt-20 sm:pb-16 bg-gradient-to-br from-nexus-deep via-nexus-power to-nexus-deep">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid gap-8 items-center sm:gap-10 md:gap-12 lg:grid-cols-2">
+                
+                <!-- Hero Content -->
+                <div class="space-y-8">
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center space-x-2 bg-gold-experience/10 border border-gold-experience/30 rounded-full px-4 py-2">
+                            <i class="fas fa-crown text-gold-experience"></i>
+                            <span class="text-sm font-medium text-gold-experience">Para Profissionais Experientes 45+</span>
+                        </div>
+                        
+                        <h1 class="font-playfair hero-title font-bold leading-tight text-3xl sm:text-4xl md:text-5xl lg:text-6xl">
+                            <span class="text-digital-clarity">Torne-se um</span><br>
+                            <span class="text-gold-experience">Nexialista Mestre</span><br>
+                            <span class="text-digital-clarity">na Era da IA</span>
+                        </h1>
+                        
+                        <p class="text-xl text-digital-clarity/80 leading-relaxed">
+                            A Academia Nexialista oferece <strong class="text-gold-experience">3 caminhos integrados</strong> 
+                            para transformar profissionais experientes em mestres da conexão e do sentido: 
+                            <strong>Trilhas de Desenvolvimento</strong>, <strong>Movimento Nexialista</strong> e <strong>Método PROSPERA-IA</strong>.
+                        </p>
+                    </div>
+                    
+                    <div class="flex flex-col gap-4 sm:flex-row sm:gap-6">
+                        <button onclick="scrollToNewsletter()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-8 py-4 rounded-lg transition-colors flex items-center justify-center space-x-2">
+                            <i class="fas fa-rocket"></i>
+                            <span>Despertar Nexialista</span>
+                        </button>
+                        <button onclick="scrollToTrilhas()" class="border-2 border-gold-experience text-gold-experience hover:bg-gold-experience hover:text-nexus-deep font-semibold px-8 py-4 rounded-lg transition-all flex items-center justify-center space-x-2">
+                            <i class="fas fa-route"></i>
+                            <span>Explorar Trilhas</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Social Proof -->
+                    <div class="flex items-center space-x-6 pt-4">
+                        <div class="flex -space-x-3">
+                            <div class="w-10 h-10 bg-gold-experience/20 rounded-full border-2 border-gold-experience flex items-center justify-center">
+                                <i class="fas fa-user text-gold-experience text-sm"></i>
+                            </div>
+                            <div class="w-10 h-10 bg-gold-experience/20 rounded-full border-2 border-gold-experience flex items-center justify-center">
+                                <i class="fas fa-user text-gold-experience text-sm"></i>
+                            </div>
+                            <div class="w-10 h-10 bg-gold-experience/20 rounded-full border-2 border-gold-experience flex items-center justify-center">
+                                <i class="fas fa-user text-gold-experience text-sm"></i>
+                            </div>
+                            <div class="w-10 h-10 bg-nexus-power rounded-full border-2 border-gold-experience flex items-center justify-center">
+                                <span class="text-gold-experience text-xs font-semibold">+50</span>
+                            </div>
+                        </div>
+                        <div class="text-sm">
+                            <p class="text-digital-clarity/80">Junte-se aos <strong class="text-gold-experience">Nexialistas</strong></p>
+                            <p class="text-digital-clarity/60">que já despertaram seu potencial</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hero Visual -->
+                <div class="relative">
+                    <div class="bg-gradient-to-br from-gold-experience/10 to-transparent rounded-3xl p-8 backdrop-blur-sm border border-gold-experience/20">
+                        <div class="space-y-6">
+                            <!-- Banner Prospera -->
+                            <div class="text-center mb-6">
+                                <img src="assets/banner-prospera.png" alt="Método PROSPERA-IA Banner" class="w-full max-w-lg mx-auto rounded-xl shadow-lg">
+                            </div>
+                            
+                            <div class="text-center">
+                                <div class="inline-block p-4 bg-gold-experience/20 rounded-full mb-4">
+                                    <i class="fas fa-brain text-gold-experience text-4xl"></i>
+                                </div>
+                                <h3 class="font-playfair text-2xl font-semibold text-digital-clarity mb-2">
+                                    Expertise Amplificada pela IA
+                                </h3>
+                                <p class="text-digital-clarity/70">
+                                    Sua experiência não é substituída, é potencializada
+                                </p>
+                            </div>
+                            
+                            <!-- Os 3 Produtos da Academia -->
+                            <div class="space-y-4">
+                                <h4 class="text-gold-experience font-semibold text-center mb-4">Nossos 3 Produtos Integrados</h4>
+                                
+                                <div class="bg-nexus-power/50 p-4 rounded-xl border border-gold-experience/20 hover:border-gold-experience/40 transition-colors">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-route text-gold-experience"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-digital-clarity font-semibold">Trilhas de Desenvolvimento</div>
+                                            <div class="text-sm text-digital-clarity/70">5 níveis evolutivos nexialistas</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-nexus-power/50 p-4 rounded-xl border border-gold-experience/20 hover:border-gold-experience/40 transition-colors">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-users text-gold-experience"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-digital-clarity font-semibold">Movimento Nexialista</div>
+                                            <div class="text-sm text-digital-clarity/70">Comunidade de mestres conectores</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bg-nexus-power/50 p-4 rounded-xl border border-gold-experience/20 hover:border-gold-experience/40 transition-colors">
+                                    <div class="flex items-center space-x-3">
+                                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center">
+                                            <i class="fas fa-brain text-gold-experience"></i>
+                                        </div>
+                                        <div>
+                                            <div class="text-digital-clarity font-semibold">Método PROSPERA-IA</div>
+                                            <div class="text-sm text-digital-clarity/70">Transformação em ativos digitais</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Problem Section -->
+    <section class="py-12 sm:py-16 md:py-20 bg-nexus-power">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="font-playfair section-title font-bold text-digital-clarity mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                    O Sistema Obsoleto Está <span class="text-red-400">Desperdiçando</span><br>
+                    Seu Maior <span class="text-gold-experience">Ativo Profissional</span>
+                </h2>
+                <p class="text-xl text-digital-clarity/70 max-w-3xl mx-auto">
+                    Enquanto o mercado valoriza juventude e "novidades", décadas de experiência valiosa são subutilizadas e desvalorizadas
+                </p>
+            </div>
+            
+            <div class="grid gap-6 mb-12 sm:gap-8 sm:mb-16 md:grid-cols-3">
+                <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-8 text-center">
+                    <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-exclamation-triangle text-red-400 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-xl text-digital-clarity mb-3">FOBO - Fear of Becoming Obsolete</h3>
+                    <p class="text-digital-clarity/70">
+                        37 milhões de brasileiros estão expostos à substituição por IA, gerando ansiedade e insegurança profissional
+                    </p>
+                </div>
+                
+                <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-8 text-center">
+                    <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-chart-line-down text-red-400 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-xl text-digital-clarity mb-3">Desvalorização da Experiência</h3>
+                    <p class="text-digital-clarity/70">
+                        Estruturas corporativas rígidas que descartam profissionais experientes em favor de "juventude digital"
+                    </p>
+                </div>
+                
+                <div class="bg-red-900/20 border border-red-500/30 rounded-xl p-8 text-center">
+                    <div class="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <i class="fas fa-hourglass-end text-red-400 text-2xl"></i>
+                    </div>
+                    <h3 class="font-semibold text-xl text-digital-clarity mb-3">Conhecimento Desperdiçado</h3>
+                    <p class="text-digital-clarity/70">
+                        Décadas de expertise valiosa permanecem "trancadas" sem estratégia de monetização digital
+                    </p>
+                </div>
+            </div>
+            
+            <div class="bg-gradient-to-r from-red-900/10 to-orange-900/10 border border-red-500/20 rounded-2xl p-8 text-center">
+                <h3 class="font-playfair text-2xl font-semibold text-digital-clarity mb-4">
+                    <i class="fas fa-quote-left text-gold-experience mr-2"></i>
+                    "Estou muito velho para mudar de carreira?"
+                    <i class="fas fa-quote-right text-gold-experience ml-2"></i>
+                </h3>
+                <p class="text-digital-clarity/70 text-lg">
+                    Esta pergunta reflete a mentalidade do <strong>sistema obsoleto</strong> que faz você acreditar que experiência é uma desvantagem.
+                    <br><br>
+                    <strong class="text-gold-experience">É hora de despertar para uma nova realidade.</strong>
+                </p>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Trilhas de Desenvolvimento Section -->
+    <section id="trilhas" class="py-12 sm:py-16 md:py-20 bg-nexus-power">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center space-x-2 bg-gold-experience/10 border border-gold-experience/30 rounded-full px-6 py-3 mb-6">
+                    <i class="fas fa-route text-gold-experience"></i>
+                    <span class="text-gold-experience font-medium">Produto #1</span>
+                </div>
+                
+                <h2 class="font-playfair section-title font-bold text-digital-clarity mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                    <span class="text-gold-experience">Trilhas de Desenvolvimento</span><br>
+                    <span class="text-2xl lg:text-3xl font-normal text-digital-clarity/80">5 Níveis Evolutivos Nexialistas</span>
+                </h2>
+                
+                <p class="text-xl text-digital-clarity/70 max-w-4xl mx-auto">
+                    Jornada progressiva e cuidadosamente calibrada que transforma profissionais experientes em 
+                    <strong class="text-gold-experience">Nexialistas Mestres</strong> - indivíduos capazes de navegar 
+                    entre múltiplas disciplinas e gerar sentido onde outros veem complexidade.
+                </p>
+            </div>
+            
+            <!-- 5 Níveis das Trilhas -->
+            <div class="space-y-8">
+                
+                <!-- Nível 1: Despertar -->
+                <div class="bg-gradient-to-r from-nexus-deep/50 to-transparent border border-gold-experience/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 hover:border-gold-experience/40 transition-colors">
+                    <div class="grid gap-6 items-center md:gap-8 lg:grid-cols-12">
+                        <div class="lg:col-span-2">
+                            <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4">
+                                <span class="text-gold-experience font-bold text-3xl">1</span>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                                <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-2 lg:mb-0">
+                                    Nível Despertar
+                                </h3>
+                                <div class="text-gold-experience font-semibold">Fundação Nexialista</div>
+                            </div>
+                            <p class="text-digital-clarity/80 text-lg mb-4">
+                                Quebra de paradigmas tradicionais e desenvolvimento da <strong>mentalidade nexialista</strong>. 
+                                Aprendizado dos fundamentos da conexão interdisciplinar e identificação do seu perfil único.
+                            </p>
+                            <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Foco Principal</div>
+                                    <div class="text-digital-clarity/70 text-sm">Autoconhecimento e fundamentos</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Habilidades</div>
+                                    <div class="text-digital-clarity/70 text-sm">Pensamento sistêmico básico</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Duração</div>
+                                    <div class="text-digital-clarity/70 text-sm">2-3 meses</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nível 2: Iniciado -->
+                <div class="bg-gradient-to-l from-nexus-deep/50 to-transparent border border-gold-experience/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 hover:border-gold-experience/40 transition-colors">
+                    <div class="grid gap-6 items-center md:gap-8 lg:grid-cols-12">
+                        <div class="lg:col-span-2 lg:order-2">
+                            <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4">
+                                <span class="text-gold-experience font-bold text-3xl">2</span>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-10 lg:order-1">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                                <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-2 lg:mb-0">
+                                    Nível Iniciado
+                                </h3>
+                                <div class="text-gold-experience font-semibold">Conexão Ativa</div>
+                            </div>
+                            <p class="text-digital-clarity/80 text-lg mb-4">
+                                Desenvolvimento da capacidade de <strong>conectar domínios diferentes</strong> de forma prática. 
+                                Aplicação inicial dos conceitos nexialistas em projetos reais e desenvolvimento da visão ampliada.
+                            </p>
+                            <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Foco Principal</div>
+                                    <div class="text-digital-clarity/70 text-sm">Conexões interdisciplinares</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Habilidades</div>
+                                    <div class="text-digital-clarity/70 text-sm">Mapeamento de padrões</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Duração</div>
+                                    <div class="text-digital-clarity/70 text-sm">3-4 meses</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nível 3: Praticante -->
+                <div class="bg-gradient-to-r from-nexus-deep/50 to-transparent border border-gold-experience/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 hover:border-gold-experience/40 transition-colors">
+                    <div class="grid gap-6 items-center md:gap-8 lg:grid-cols-12">
+                        <div class="lg:col-span-2">
+                            <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4">
+                                <span class="text-gold-experience font-bold text-3xl">3</span>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                                <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-2 lg:mb-0">
+                                    Nível Praticante
+                                </h3>
+                                <div class="text-gold-experience font-semibold">Síntese Avançada</div>
+                            </div>
+                            <p class="text-digital-clarity/80 text-lg mb-4">
+                                Domínio da <strong>síntese de conhecimentos complexos</strong> e capacidade de gerar insights únicos. 
+                                Desenvolvimento de metodologias próprias e aplicação em cenários de alta complexidade.
+                            </p>
+                            <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Foco Principal</div>
+                                    <div class="text-digital-clarity/70 text-sm">Síntese e metodologia</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Habilidades</div>
+                                    <div class="text-digital-clarity/70 text-sm">Geração de insights únicos</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Duração</div>
+                                    <div class="text-digital-clarity/70 text-sm">4-6 meses</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nível 4: Avançado -->
+                <div class="bg-gradient-to-l from-nexus-deep/50 to-transparent border border-gold-experience/20 rounded-xl sm:rounded-2xl p-6 sm:p-8 lg:p-12 hover:border-gold-experience/40 transition-colors">
+                    <div class="grid gap-6 items-center md:gap-8 lg:grid-cols-12">
+                        <div class="lg:col-span-2 lg:order-2">
+                            <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4">
+                                <span class="text-gold-experience font-bold text-3xl">4</span>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-10 lg:order-1">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                                <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-2 lg:mb-0">
+                                    Nível Avançado
+                                </h3>
+                                <div class="text-gold-experience font-semibold">Liderança Nexialista</div>
+                            </div>
+                            <p class="text-digital-clarity/80 text-lg mb-4">
+                                Capacidade de <strong>liderar transformações sistêmicas</strong> e influenciar ecossistemas complexos. 
+                                Desenvolvimento da habilidade de ensinar e multiplicar o conhecimento nexialista.
+                            </p>
+                            <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Foco Principal</div>
+                                    <div class="text-digital-clarity/70 text-sm">Liderança e influência</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Habilidades</div>
+                                    <div class="text-digital-clarity/70 text-sm">Transformação sistêmica</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Duração</div>
+                                    <div class="text-digital-clarity/70 text-sm">6-8 meses</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Nível 5: Mestre -->
+                <div class="bg-gradient-to-r from-gold-experience/10 to-gold-legacy/10 border border-gold-experience/40 rounded-2xl p-8 lg:p-12 hover:border-gold-experience/60 transition-colors">
+                    <div class="grid gap-6 items-center md:gap-8 lg:grid-cols-12">
+                        <div class="lg:col-span-2">
+                            <div class="w-20 h-20 bg-gold-experience/30 rounded-full flex items-center justify-center mx-auto lg:mx-0 mb-4">
+                                <span class="text-nexus-deep font-bold text-3xl">5</span>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-10">
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-4">
+                                <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-2 lg:mb-0">
+                                    Nível Mestre
+                                </h3>
+                                <div class="text-gold-experience font-semibold">Nexialista Completo</div>
+                            </div>
+                            <p class="text-digital-clarity/80 text-lg mb-4">
+                                O ápice da jornada nexialista: <strong>domínio completo da arte de conectar</strong> e gerar sentido. 
+                                Capacidade de criar novos paradigmas e influenciar a evolução de campos inteiros do conhecimento.
+                            </p>
+                            <div class="grid gap-3 sm:gap-4 md:grid-cols-3">
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Foco Principal</div>
+                                    <div class="text-digital-clarity/70 text-sm">Criação de paradigmas</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Habilidades</div>
+                                    <div class="text-digital-clarity/70 text-sm">Maestria completa</div>
+                                </div>
+                                <div class="bg-nexus-deep/50 p-3 rounded-lg">
+                                    <div class="text-gold-experience font-medium text-sm">Duração</div>
+                                    <div class="text-digital-clarity/70 text-sm">Processo contínuo</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <!-- CTA das Trilhas -->
+            <div class="text-center mt-16">
+                <div class="bg-gradient-to-r from-gold-experience/10 to-gold-legacy/10 border border-gold-experience/30 rounded-2xl p-8">
+                    <h3 class="font-playfair text-2xl font-bold text-digital-clarity mb-4">
+                        Inicie Sua Jornada Nexialista Hoje
+                    </h3>
+                    <p class="text-digital-clarity/80 mb-6 max-w-2xl mx-auto">
+                        Cada nível constrói sobre o anterior, criando uma progressão sólida rumo à maestria nexialista. 
+                        Cadastre-se para descobrir seu ponto de partida ideal.
+                    </p>
+                    <button onclick="scrollToNewsletter()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-bold px-8 py-4 rounded-lg transition-colors">
+                        <i class="fas fa-rocket mr-2"></i>Descobrir Meu Nível Inicial
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Solution/Method Section -->
+    <section id="metodo" class="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-nexus-deep via-nexus-power to-nexus-deep">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center space-x-2 bg-gold-experience/10 border border-gold-experience/30 rounded-full px-6 py-3 mb-6">
+                    <i class="fas fa-brain text-gold-experience"></i>
+                    <span class="text-gold-experience font-medium">Produto #3</span>
+                </div>
+                
+                <h2 class="font-playfair section-title font-bold text-digital-clarity mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                    Método <span class="text-gold-experience">PROSPERA-IA</span><br>
+                    <span class="text-2xl lg:text-3xl font-normal text-digital-clarity/80">Transformação em Ativos Digitais</span>
+                </h2>
+                
+                <div class="mb-4 flex flex-wrap items-center justify-center gap-3">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-purple-600/20 text-purple-300 border border-purple-500/30">Versão 4.0</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-blue-600/20 text-blue-300 border border-blue-500/30">Público: 45–65 anos</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs bg-green-600/20 text-green-300 border border-green-500/30">Jornada: 70–80 horas</span>
+                </div>
+                <p class="text-xl text-digital-clarity/70 max-w-4xl mx-auto mb-3">
+                    Um programa intensivo e estruturado que aplica os princípios nexialistas para 
+                    <strong class="text-gold-experience">monetizar sua expertise</strong> através da criação de ativos digitais prósperos, 
+                    usando IA como amplificadora estratégica do seu conhecimento acumulado.
+                </p>
+                <!-- Link para PDF removido a pedido do Yuan em 2025-09-26 -->
+            </div>
+            
+            <!-- Method Phases -->
+            <div class="grid lg:grid-cols-4 gap-8 mb-16">
+                
+                <!-- Phase 1 -->
+                <div class="bg-nexus-power/50 border border-gold-experience/20 rounded-2xl p-8 hover:border-gold-experience/40 transition-colors">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-gold-experience font-bold text-2xl">1</span>
+                        </div>
+                        <h3 class="font-playfair text-2xl font-semibold text-digital-clarity mb-2">
+                            Autodescoberta com Oráculo
+                        </h3>
+                        <p class="text-gold-experience font-medium">20 horas</p>
+                    </div>
+                    
+                    <ul class="space-y-3">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Mapeamento do seu ikigai profissional</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Identificação do seu propósito e forças únicas</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Descoberta do seu ACMV (Ativo de Conhecimento Mais Valioso)</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Eliminação de crenças limitantes</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Phase 2: Nexus -->
+                <div class="bg-nexus-power/50 border border-gold-experience/20 rounded-2xl p-8 hover:border-gold-experience/40 transition-colors">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-gold-experience font-bold text-2xl">2</span>
+                        </div>
+                        <h3 class="font-playfair text-2xl font-semibold text-digital-clarity mb-2">
+                            Conexões com Nexus
+                        </h3>
+                        <p class="text-gold-experience font-medium">20 horas</p>
+                    </div>
+                    
+                    <ul class="space-y-3">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Síntese dos achados do Oráculo em mapas de decisão</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Conexão entre domínios e identificação de padrões estratégicos</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Definição de rotas e experimentos prioritários</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Arquitetura de interdependências e indicadores de progresso</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Phase 3: Alquimista -->
+                <div class="bg-nexus-power/50 border border-gold-experience/20 rounded-2xl p-8 hover:border-gold-experience/40 transition-colors">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-gold-experience font-bold text-2xl">3</span>
+                        </div>
+                        <h3 class="font-playfair text-2xl font-semibold text-digital-clarity mb-2">
+                            Estruturação com Alquimista
+                        </h3>
+                        <p class="text-gold-experience font-medium">20 horas</p>
+                    </div>
+                    
+                    <ul class="space-y-3">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Extração e sistematização do conhecimento-chave</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Estruturação metodológica da expertise</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Design do produto digital baseado na experiência</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Definição da proposta de valor única</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Phase 4: Arquiteto -->
+                <div class="bg-nexus-power/50 border border-gold-experience/20 rounded-2xl p-8 hover:border-gold-experience/40 transition-colors">
+                    <div class="text-center mb-6">
+                        <div class="w-20 h-20 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <span class="text-gold-experience font-bold text-2xl">4</span>
+                        </div>
+                        <h3 class="font-playfair text-2xl font-semibold text-digital-clarity mb-2">
+                            Implementação com Arquiteto
+                        </h3>
+                        <p class="text-gold-experience font-medium">10–20 horas</p>
+                    </div>
+                    
+                    <ul class="space-y-3">
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Produção do MVP (Mínimo Produto Viável)</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Arquitetura completa do produto digital</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Estratégia de marketing e posicionamento</span>
+                        </li>
+                        <li class="flex items-start space-x-3">
+                            <i class="fas fa-check-circle text-gold-experience mt-1"></i>
+                            <span class="text-digital-clarity/80">Lançamento inicial e validação de mercado</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Results & Benefits -->
+            <div class="bg-gradient-to-r from-gold-experience/10 to-gold-legacy/10 border border-gold-experience/30 rounded-2xl p-8 lg:p-12">
+                <div class="text-center mb-8">
+                    <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-4">
+                        <i class="fas fa-trophy text-gold-experience mr-3"></i>
+                        Resultado Final Garantido
+                    </h3>
+                    <p class="text-xl text-digital-clarity/80">
+                        Seu primeiro ativo digital comercializável + estratégia completa de lançamento
+                    </p>
+                </div>
+                
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-coins text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity mb-2">Ativo Digital Pronto</h4>
+                        <p class="text-sm text-digital-clarity/70">Produto ou serviço estruturado para comercialização imediata</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-bullhorn text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity mb-2">Estratégia de Marketing</h4>
+                        <p class="text-sm text-digital-clarity/70">Plano completo de posicionamento e comunicação</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-users text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity mb-2">Comunidade Nexialista</h4>
+                        <p class="text-sm text-digital-clarity/70">Acesso vitalício à tribo dos profissionais amplificados</p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-robot text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity mb-2">Agentes IA Personalizados</h4>
+                        <p class="text-sm text-digital-clarity/70">Ferramentas de IA customizadas para sua área de expertise</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Movimento Nexialista Section -->
+    <section id="movimento" class="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-nexus-power via-nexus-deep to-nexus-power">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <div class="inline-flex items-center space-x-2 bg-gold-experience/10 border border-gold-experience/30 rounded-full px-6 py-3 mb-6">
+                    <i class="fas fa-users text-gold-experience"></i>
+                    <span class="text-gold-experience font-medium">Produto #2</span>
+                </div>
+                
+                <h2 class="font-playfair section-title font-bold text-digital-clarity mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                    <span class="text-gold-experience">Movimento Nexialista</span><br>
+                    <span class="text-2xl lg:text-3xl font-normal text-digital-clarity/80">Comunidade de Mestres Conectores</span>
+                </h2>
+                
+                <p class="text-xl text-digital-clarity/70 max-w-4xl mx-auto">
+                    Uma comunidade exclusiva e engajada de profissionais que transcenderam os limites tradicionais, 
+                    conectando saberes e criando impacto exponencial através da colaboração nexialista.
+                </p>
+            </div>
+            
+            <div class="grid gap-8 items-center mb-12 sm:gap-12 md:gap-16 md:mb-16 lg:grid-cols-2">
+                
+                <!-- Community Benefits -->
+                <div class="space-y-8">
+                    <div>
+                        <h3 class="font-playfair text-3xl font-bold text-digital-clarity mb-6">
+                            <i class="fas fa-network-wired text-gold-experience mr-3"></i>
+                            Ecossistema de Crescimento Mútuo
+                        </h3>
+                        <p class="text-digital-clarity/80 text-lg leading-relaxed">
+                            O Movimento Nexialista vai além de uma comunidade tradicional. É um <strong class="text-gold-experience">ecossistema vivo</strong> 
+                            onde profissionais experientes se conectam, colaboram e evoluem juntos, criando sinergia entre diferentes áreas de expertise.
+                        </p>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-handshake text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-digital-clarity text-lg mb-2">Networking Estratégico</h4>
+                                <p class="text-digital-clarity/70">
+                                    Conexões genuínas com profissionais que compartilham a mentalidade nexialista, 
+                                    criando oportunidades de colaboração e crescimento mútuo.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-lightbulb text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-digital-clarity text-lg mb-2">Sessões de Insight</h4>
+                                <p class="text-digital-clarity/70">
+                                    Encontros regulares para compartilhar descobertas, desafios e soluções, 
+                                    amplificando a inteligência coletiva do grupo.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-project-diagram text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-digital-clarity text-lg mb-2">Projetos Colaborativos</h4>
+                                <p class="text-digital-clarity/70">
+                                    Oportunidades de trabalhar em projetos multidisciplinares que aplicam 
+                                    os princípios nexialistas na prática.
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-graduation-cap text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold text-digital-clarity text-lg mb-2">Mentoria Peer-to-Peer</h4>
+                                <p class="text-digital-clarity/70">
+                                    Sistema de mentoria mútua onde cada membro contribui e recebe orientação 
+                                    baseada em suas áreas de expertise e experiência.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Community Structure -->
+                <div class="space-y-6">
+                    <div class="bg-gradient-to-br from-gold-experience/10 to-transparent border border-gold-experience/30 rounded-2xl p-8">
+                        <h4 class="font-playfair text-2xl font-semibold text-digital-clarity mb-6 text-center">
+                            Estrutura da Comunidade
+                        </h4>
+                        
+                        <div class="space-y-4">
+                            <!-- Círculo Interno -->
+                            <div class="bg-nexus-deep/50 rounded-xl p-6 border border-gold-experience/20">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-8 h-8 bg-gold-experience/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-crown text-gold-experience text-sm"></i>
+                                    </div>
+                                    <h5 class="font-semibold text-digital-clarity">Círculo dos Mestres</h5>
+                                </div>
+                                <p class="text-digital-clarity/70 text-sm">
+                                    Nexialistas Nível 5 que lideram iniciativas e orientam a evolução da comunidade
+                                </p>
+                            </div>
+                            
+                            <!-- Círculo Intermediário -->
+                            <div class="bg-nexus-deep/50 rounded-xl p-6 border border-gold-experience/20">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-8 h-8 bg-gold-experience/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-star text-gold-experience text-sm"></i>
+                                    </div>
+                                    <h5 class="font-semibold text-digital-clarity">Praticantes Avançados</h5>
+                                </div>
+                                <p class="text-digital-clarity/70 text-sm">
+                                    Nexialistas Níveis 3-4 que facilitam projetos e sessões de desenvolvimento
+                                </p>
+                            </div>
+                            
+                            <!-- Círculo Externo -->
+                            <div class="bg-nexus-deep/50 rounded-xl p-6 border border-gold-experience/20">
+                                <div class="flex items-center space-x-3 mb-3">
+                                    <div class="w-8 h-8 bg-gold-experience/30 rounded-full flex items-center justify-center">
+                                        <i class="fas fa-seedling text-gold-experience text-sm"></i>
+                                    </div>
+                                    <h5 class="font-semibold text-digital-clarity">Nexialistas em Desenvolvimento</h5>
+                                </div>
+                                <p class="text-digital-clarity/70 text-sm">
+                                    Membros nos Níveis 1-2 focados em aprendizado e aplicação dos fundamentos
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Community Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-nexus-deep/50 border border-gold-experience/20 rounded-xl p-4 text-center">
+                            <div class="text-gold-experience font-bold text-3xl">500+</div>
+                            <div class="text-digital-clarity/70 text-sm">Nexialistas Ativos</div>
+                        </div>
+                        <div class="bg-nexus-deep/50 border border-gold-experience/20 rounded-xl p-4 text-center">
+                            <div class="text-gold-experience font-bold text-3xl">50+</div>
+                            <div class="text-digital-clarity/70 text-sm">Áreas de Expertise</div>
+                        </div>
+                        <div class="bg-nexus-deep/50 border border-gold-experience/20 rounded-xl p-4 text-center">
+                            <div class="text-gold-experience font-bold text-3xl">100+</div>
+                            <div class="text-digital-clarity/70 text-sm">Projetos Realizados</div>
+                        </div>
+                        <div class="bg-nexus-deep/50 border border-gold-experience/20 rounded-xl p-4 text-center">
+                            <div class="text-gold-experience font-bold text-3xl">24/7</div>
+                            <div class="text-digital-clarity/70 text-sm">Suporte Mútuo</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Community Values -->
+            <div class="bg-gradient-to-r from-gold-experience/10 to-gold-legacy/10 border border-gold-experience/30 rounded-2xl p-8 lg:p-12">
+                <h3 class="font-playfair text-3xl font-bold text-digital-clarity text-center mb-8">
+                    <i class="fas fa-heart text-gold-experience mr-3"></i>
+                    Valores do Movimento
+                </h3>
+                
+                <div class="grid md:grid-cols-3 gap-8">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-infinity text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity text-lg mb-3">Crescimento Contínuo</h4>
+                        <p class="text-digital-clarity/70">
+                            Compromisso com a evolução constante e o desenvolvimento mútuo, 
+                            sempre buscando novas conexões e insights.
+                        </p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-bridge text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity text-lg mb-3">Conexão Genuína</h4>
+                        <p class="text-digital-clarity/70">
+                            Relacionamentos autênticos baseados em confiança mútua, 
+                            respeito e objetivos compartilhados de crescimento.
+                        </p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <i class="fas fa-seedling text-gold-experience text-xl"></i>
+                        </div>
+                        <h4 class="font-semibold text-digital-clarity text-lg mb-3">Impacto Positivo</h4>
+                        <p class="text-digital-clarity/70">
+                            Uso da expertise coletiva para gerar transformações 
+                            significativas no mundo pessoal e profissional.
+                        </p>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-8">
+                    <button onclick="scrollToNewsletter()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-bold px-8 py-4 rounded-lg transition-colors">
+                        <i class="fas fa-door-open mr-2"></i>Candidatar-se ao Movimento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Authority Section - Yuan -->
+    <section id="yuan" class="py-12 sm:py-16 md:py-20 bg-nexus-power">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                
+                <!-- Yuan's Photo & Credentials -->
+                <div class="text-center lg:text-left">
+                    <div class="relative inline-block mb-16 yuan-photo-container">
+                        
+                        <!-- Professional Badge - Above Photo -->
+                        <div class="mb-6 text-center">
+                            <div class="inline-block px-6 py-3 rounded-2xl text-base font-bold shadow-xl founder-badge text-nexus-deep">
+                                Fundador & Visionário
+                            </div>
+                        </div>
+                        
+                        <!-- Yuan's Photo - Centered -->
+                        <div class="w-64 h-64 sm:w-72 sm:h-72 md:w-80 md:h-80 rounded-full border-4 border-gold-experience shadow-2xl overflow-hidden mx-auto yuan-photo-frame relative">
+                            <img src="assets/yuan-photo.jpg" alt="Yuan - Fundador da Academia Nexialista" class="w-full h-full object-cover" style="object-position: center 30%;">
+                        </div>
+                        
+                        <!-- Badges Container - Outside Circle -->
+                        <div class="flex flex-wrap justify-center items-center mt-6 sm:mt-8 gap-4 sm:gap-6">
+                            
+                            <!-- UFRJ Badge - Left Side -->
+                            <div class="bg-nexus-deep/90 border border-gold-experience/50 rounded-xl p-3 sm:p-4 shadow-lg credential-badge">
+                                <div class="text-center">
+                                    <i class="fas fa-university text-gold-experience text-xl sm:text-2xl block mb-1 sm:mb-2"></i>
+                                    <div class="text-xs sm:text-sm text-gold-experience font-bold">UFRJ</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Author Badge - Middle -->
+                            <div class="bg-nexus-deep/90 border border-gold-experience/50 rounded-xl p-3 sm:p-4 shadow-lg credential-badge">
+                                <div class="text-center">
+                                    <i class="fas fa-book text-gold-experience text-xl sm:text-2xl block mb-1 sm:mb-2"></i>
+                                    <div class="text-xs sm:text-sm text-gold-experience font-bold">Autor</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Músico Badge - New -->
+                            <div class="bg-nexus-deep/90 border border-gold-experience/50 rounded-xl p-3 sm:p-4 shadow-lg credential-badge">
+                                <div class="text-center">
+                                    <i class="fas fa-music text-gold-experience text-xl sm:text-2xl block mb-1 sm:mb-2"></i>
+                                    <div class="text-xs sm:text-sm text-gold-experience font-bold">Músico</div>
+                                </div>
+                            </div>
+
+                            <!-- Compositor Badge - New -->
+                            <div class="bg-nexus-deep/90 border border-gold-experience/50 rounded-xl p-3 sm:p-4 shadow-lg credential-badge">
+                                <div class="text-center">
+                                    <i class="fas fa-pen-nib text-gold-experience text-xl sm:text-2xl block mb-1 sm:mb-2"></i>
+                                    <div class="text-xs sm:text-sm text-gold-experience font-bold">Compositor</div>
+                                </div>
+                            </div>
+
+                            <!-- Jiu Jitsu Badge - New -->
+                            <div class="bg-nexus-deep/90 border border-gold-experience/50 rounded-xl p-3 sm:p-4 shadow-lg credential-badge">
+                                <div class="text-center">
+                                    <svg class="w-6 h-6 sm:w-7 sm:h-7 mx-auto mb-1 sm:mb-2 text-gold-experience" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M8 4l-3 4v10h14V8l-3-4H8z"/>
+    <path d="M12 4l-4 6"/>
+    <path d="M12 4l4 6"/>
+    <path d="M5 13h14"/>
+    <path d="M9 13l-1 5"/>
+    <path d="M15 13l1 5"/>
+</svg>
+                                    <div class="text-xs sm:text-sm text-gold-experience font-bold">Jiu Jitsu</div>
+                                </div>
+                            </div>
+
+                            <!-- Portugal Badge - Right Side -->
+                            <div class="bg-nexus-deep/90 border border-gold-experience/50 rounded-xl p-3 sm:p-4 shadow-lg credential-badge">
+                                <div class="text-center">
+                                    <i class="fas fa-globe text-gold-experience text-xl sm:text-2xl block mb-1 sm:mb-2"></i>
+                                    <div class="text-xs sm:text-sm text-gold-experience font-bold">Portugal</div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        
+                        <!-- Decorative Elements - Hidden on small screens -->
+                        <div class="hidden sm:block absolute top-1/2 -left-8 w-4 h-4 bg-gold-experience/30 rounded-full animate-pulse"></div>
+                        <div class="hidden sm:block absolute top-1/3 -right-6 w-3 h-3 bg-gold-experience/40 rounded-full animate-pulse" style="animation-delay: 1s;"></div>
+                        <div class="hidden sm:block absolute bottom-1/3 -left-6 w-2 h-2 bg-gold-experience/50 rounded-full animate-pulse" style="animation-delay: 2s;"></div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Yuan's Story & Authority -->
+                <div class="space-y-6">
+                    <div>
+                        <div class="inline-flex items-center space-x-2 bg-gold-experience/10 border border-gold-experience/30 rounded-full px-4 py-2 mb-4">
+                            <i class="fas fa-crown text-gold-experience"></i>
+                            <span class="text-gold-experience font-medium">Fundador do Movimento Nexialista</span>
+                        </div>
+                        <h2 class="font-playfair text-4xl font-bold text-digital-clarity mb-4">
+                            Conheça <span class="text-gold-experience">Yuan</span>
+                        </h2>
+                        
+                        <p class="text-lg text-digital-clarity/80 leading-relaxed">
+                            O visionário por trás da revolução que está transformando como profissionais experientes 
+                            veem sua carreira na era da Inteligência Artificial.
+                        </p>
+                    </div>
+                    
+                    <!-- Journey Timeline -->
+                    <div class="space-y-4">
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-graduation-cap text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-digital-clarity">Formação Sólida</h3>
+                                <p class="text-digital-clarity/70">Graduado em Contabilidade pela UFRJ, construiu base técnica robusta</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-building text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-digital-clarity">Sucesso Corporativo</h3>
+                                <p class="text-digital-clarity/70">Carreira consolidada no maior banco de investimentos da América Latina, referência em finanças corporativas</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-rocket text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-digital-clarity">Transição Empreendedora</h3>
+                                <p class="text-digital-clarity/70">Fundou consultoria online de sucesso, provando que experiência corporativa pode ser digitalizada</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-plane text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-digital-clarity">Vida Internacional</h3>
+                                <p class="text-digital-clarity/70">Mudança para Portugal em busca de qualidade de vida, demonstrando que autonomia profissional gera liberdade geográfica</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-start space-x-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-lightbulb text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-digital-clarity">O Despertar Nexialista</h3>
+                                <p class="text-digital-clarity/70">Durante a pandemia, aprofundou estudos em felicidade, longevidade e propósito, descobrindo os pilares da vida plena e criando o movimento que transformaria milhares de carreiras</p>
+                            </div>
+                        </div>
+
+                        <!-- Book Authorship Achievement (after O Despertar Nexialista) -->
+                        <div class="flex items-start space-x-4 mt-4">
+                            <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-book text-gold-experience"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-semibold text-digital-clarity">Autor do Livro</h3>
+                                <p class="text-digital-clarity/70">Autor de \"Nexialismo — O Superpoder na Era da IA\", obra que consolida a filosofia e os métodos práticos do movimento Nexialista.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Musician Achievement -->
+                    <div class="flex items-start space-x-4 mt-4">
+                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-music text-gold-experience"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-digital-clarity">Músico e Compositor</h3>
+                            <p class="text-digital-clarity/70">Álbum autoral em produção — lançamento no Spotify nos próximos meses, exercitando criatividade, ritmo e composição como prática do pensamento Nexialista.</p>
+                        </div>
+                    </div>
+
+                    <!-- Jiu Jitsu Achievement -->
+                    <div class="flex items-start space-x-4 mt-4">
+                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-dumbbell text-gold-experience"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold text-digital-clarity">Praticante de Jiu Jitsu</h3>
+                            <p class="text-digital-clarity/70">Disciplina para manter a saúde física e mental sob estresse, expandindo foco, autocontrole e resiliência — fundamentos práticos do pensamento Nexialista.</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Philosophy -->
+                    <div class="bg-gradient-to-r from-gold-experience/10 to-transparent border-l-4 border-gold-experience p-6 rounded-r-lg">
+                        <h3 class="font-playfair text-xl font-semibold text-digital-clarity mb-3">
+                            <i class="fas fa-quote-left text-gold-experience mr-2"></i>
+                            Filosofia Nexialista
+                        </h3>
+                        <p class="text-digital-clarity/80 italic">
+                            "A experiência não é um fardo do passado, é o combustível do futuro. 
+                            Quando amplificada pela IA, sua expertise de décadas se torna seu maior ativo competitivo."
+                        </p>
+                    </div>
+                    
+                    <!-- Three Pillars -->
+                    <div class="bg-nexus-deep/50 border border-gold-experience/20 rounded-xl p-6">
+                        <h3 class="font-semibold text-digital-clarity mb-4 text-center">
+                            <i class="fas fa-columns text-gold-experience mr-2"></i>
+                            Os Três Pilares da Vida Plena
+                        </h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="text-center">
+                                <i class="fas fa-search text-gold-experience text-2xl mb-2"></i>
+                                <div class="font-medium text-digital-clarity">Autoconhecimento</div>
+                                <div class="text-sm text-digital-clarity/70">Propósito e potencial</div>
+                            </div>
+                            <div class="text-center">
+                                <i class="fas fa-seedling text-gold-experience text-2xl mb-2"></i>
+                                <div class="font-medium text-digital-clarity">Ecossistema</div>
+                                <div class="text-sm text-digital-clarity/70">Ambiente de crescimento</div>
+                            </div>
+                            <div class="text-center">
+                                <i class="fas fa-coins text-gold-experience text-2xl mb-2"></i>
+                                <div class="font-medium text-digital-clarity">Ativos de Renda</div>
+                                <div class="text-sm text-digital-clarity/70">Conhecimento monetizado</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Newsletter Section -->
+    <section id="newsletter" class="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-gold-experience/10 via-transparent to-gold-legacy/10">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="space-y-8">
+                <div>
+                    <div class="inline-flex items-center space-x-2 bg-gold-experience/20 border border-gold-experience/40 rounded-full px-6 py-3 mb-6">
+                        <i class="fas fa-key text-gold-experience"></i>
+                        <span class="text-gold-experience font-medium">Acesso Exclusivo</span>
+                    </div>
+                    
+                    <h2 class="font-playfair section-title font-bold text-digital-clarity mb-6 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                        Desperte Seu <span class="text-gold-experience">Potencial Nexialista</span>
+                    </h2>
+                    
+                    <p class="text-xl text-digital-clarity/80 leading-relaxed max-w-3xl mx-auto">
+                        Cadastre-se na nossa newsletter e ganhe acesso ao <strong class="text-gold-experience">Agente IA Nexialista</strong> 
+                        - seu consultor pessoal que aplicará nosso formulário de diagnóstico exclusivo para identificar 
+                        seu arquétipo profissional e mapear seu caminho de transformação.
+                    </p>
+                </div>
+                
+                <!-- Newsletter Form -->
+                <div class="bg-nexus-power/50 border border-gold-experience/30 rounded-2xl p-8 lg:p-12">
+                    <form id="newsletter-form" class="space-y-6">
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-digital-clarity/80 mb-2">
+                                    <i class="fas fa-user text-gold-experience mr-2"></i>Nome Completo
+                                </label>
+                                <input 
+                                    type="text" 
+                                    id="name" 
+                                    name="name" 
+                                    required
+                                    class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none transition-colors"
+                                    placeholder="Seu nome completo"
+                                >
+                            </div>
+                            
+                            <div>
+                                <label for="email" class="block text-sm font-medium text-digital-clarity/80 mb-2">
+                                    <i class="fas fa-envelope text-gold-experience mr-2"></i>Melhor E-mail
+                                </label>
+                                <input 
+                                    type="email" 
+                                    id="email" 
+                                    name="email" 
+                                    required
+                                    class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none transition-colors"
+                                    placeholder="seu@email.com"
+                                >
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label for="whatsapp" class="block text-sm font-medium text-digital-clarity/80 mb-2">
+                                <i class="fab fa-whatsapp text-gold-experience mr-2"></i>WhatsApp (com DDD)
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="whatsapp" 
+                                name="whatsapp" 
+                                required
+                                class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none transition-colors"
+                                placeholder="(11) 99999-9999"
+                            >
+                        </div>
+                        
+                        <div class="text-left">
+                            <label class="flex items-start space-x-3 cursor-pointer">
+                                <input 
+                                    type="checkbox" 
+                                    id="terms" 
+                                    name="terms" 
+                                    required
+                                    class="mt-1 w-5 h-5 text-gold-experience bg-nexus-deep border border-gold-experience/30 rounded focus:ring-gold-experience focus:ring-2"
+                                >
+                                <span class="text-sm text-digital-clarity/70">
+                                    Autorizo o recebimento de conteúdos educativos sobre transformação profissional e 
+                                    concordo com a <a href="#" class="text-gold-experience hover:underline">Política de Privacidade</a>
+                                </span>
+                            </label>
+                        </div>
+                        
+                        <button 
+                            type="submit" 
+                            class="w-full bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-bold py-4 px-8 rounded-lg transition-colors flex items-center justify-center space-x-3 text-lg"
+                        >
+                            <i class="fas fa-rocket"></i>
+                            <span>DESPERTAR MEU POTENCIAL NEXIALISTA</span>
+                        </button>
+                    </form>
+                    
+                    <!-- Success Message (Hidden initially) -->
+                    <div id="success-message" class="hidden">
+                        <div class="bg-green-900/20 border border-green-500/30 rounded-xl p-6 text-center">
+                            <i class="fas fa-check-circle text-green-400 text-4xl mb-4"></i>
+                            <h3 class="font-semibold text-xl text-digital-clarity mb-2">Bem-vindo(a) à Comunidade Nexialista!</h3>
+                            <p class="text-digital-clarity/80 mb-4">
+                                Seu acesso foi liberado com sucesso. Agora você pode conversar com nosso Agente IA Nexialista.
+                            </p>
+                            <button 
+                                onclick="showAIAgent()" 
+                                class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-6 py-3 rounded-lg transition-colors"
+                            >
+                                <i class="fas fa-robot mr-2"></i>Conversar com Agente IA
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefits Preview -->
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-brain text-gold-experience text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-digital-clarity mb-2">Diagnóstico Nexialista</h3>
+                        <p class="text-sm text-digital-clarity/70">
+                            Identifique seu arquétipo profissional e potencial de transformação
+                        </p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-envelope-open-text text-gold-experience text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-digital-clarity mb-2">Conteúdo Exclusivo</h3>
+                        <p class="text-sm text-digital-clarity/70">
+                            Receba estratégias semanais de reinvenção profissional
+                        </p>
+                    </div>
+                    
+                    <div class="text-center">
+                        <div class="w-16 h-16 bg-gold-experience/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <i class="fas fa-users text-gold-experience text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold text-digital-clarity mb-2">Comunidade Elite</h3>
+                        <p class="text-sm text-digital-clarity/70">
+                            Conecte-se com outros Nexialistas em transformação
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- Pricing Section -->
+    <section id="precos" class="py-12 sm:py-16 md:py-20 bg-gradient-to-br from-nexus-deep via-nexus-power to-nexus-deep">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <div class="inline-flex items-center space-x-2 bg-gold-experience/10 border border-gold-experience/30 rounded-full px-6 py-3 mb-6">
+                    <i class="fas fa-tags text-gold-experience"></i>
+                    <span class="text-gold-experience font-medium">Planos e Preços</span>
+                </div>
+                <h2 class="font-playfair section-title font-bold text-digital-clarity mb-4 text-2xl sm:text-3xl md:text-4xl lg:text-5xl">
+                    Escolha seu nível Nexialista
+                </h2>
+                <p class="text-digital-clarity/70 max-w-3xl mx-auto">Comece no Explorer, avance para o Master recomendado e libere tudo com o Infinity VIP.</p>
+            </div>
+
+            <!-- Billing Toggle -->
+            <div class="flex items-center justify-center mb-10">
+                <div class="flex items-center space-x-4 bg-nexus-power/50 border border-gold-experience/20 rounded-full px-4 py-2">
+                    <span class="text-sm text-digital-clarity/70">Mensal</span>
+                    <label class="inline-flex items-center cursor-pointer">
+                        <input id="billing-toggle" type="checkbox" class="sr-only">
+                        <span class="w-12 h-6 bg-nexus-deep border border-gold-experience/30 rounded-full relative transition-all duration-300 toggle-bg">
+                            <span class="dot absolute left-1 top-1 w-4 h-4 bg-gold-experience rounded-full transition-all duration-300"></span>
+                        </span>
+                    </label>
+                    <span class="text-sm text-digital-clarity/70 flex items-center">Anual <span class="ml-2 px-2 py-0.5 rounded-full text-xs bg-emerald-600/20 text-emerald-300 border border-emerald-500/30">Economize</span></span>
+                </div>
+            </div>
+
+            <!-- Plans Grid -->
+            <div class="grid gap-6 md:grid-cols-3">
+                <!-- Explorer (Basic) -->
+                <div class="relative bg-nexus-power/60 border border-gold-experience/20 rounded-2xl p-6">
+                    <div class="mb-4">
+                        <h3 class="font-playfair text-2xl font-bold text-digital-clarity">Nexus Explorer</h3>
+                        <p class="text-digital-clarity/60 text-sm">Comece sua jornada</p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="price-monthly text-4xl font-extrabold text-gold-experience" data-monthly="97"><span class="monthly-amount">R$ 97</span><span class="text-base text-digital-clarity/60">/mês</span></div>
+                        <div class="price-annual hidden text-4xl font-extrabold text-gold-experience flex items-center gap-2"><span class="annual-amount">R$ 931</span><span class="text-base text-digital-clarity/60">/ano</span><span class="annual-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-emerald-600/20 text-emerald-300 border border-emerald-500/30">20% OFF</span></div>
+                        <div class="price-savings hidden text-xs text-emerald-300 mt-1">Economize 20% vs mensal</div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-digital-clarity/80 mb-6">
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Acesso a agentes básicos</span></li>
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Memória limitada</span></li>
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Recursos essenciais</span></li>
+                    </ul>
+                    <a class="hotmart-cta w-full inline-flex items-center justify-center bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-4 py-3 rounded-lg transition-colors"
+                       data-plan-id="explorer" data-checkout-plan="monthly"
+                       data-hotmart-monthly="https://pay.hotmart.com/SEU_LINK_EXPLORER_MENSAL"
+                       data-hotmart-annual="https://pay.hotmart.com/SEU_LINK_EXPLORER_ANUAL"
+                       href="https://pay.hotmart.com/SEU_LINK_EXPLORER_MENSAL">
+                        <i class="fas fa-shopping-cart mr-2"></i>Assinar Explorer
+                    </a>
+                </div>
+
+                <!-- Master (Premium - Recommended) -->
+                <div class="relative bg-gradient-to-b from-gold-experience/10 to-transparent border border-gold-experience/40 rounded-2xl p-6 ring-1 ring-gold-experience/20">
+                    <div class="absolute -top-3 right-4">
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-purple-600/20 text-purple-200 border border-purple-500/30"><i class="fas fa-star mr-1"></i>Recomendado</span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="font-playfair text-2xl font-bold text-digital-clarity">Nexus Master</h3>
+                        <p class="text-digital-clarity/60 text-sm">Equilíbrio perfeito</p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="price-monthly text-4xl font-extrabold text-gold-experience" data-monthly="197"><span class="monthly-amount">R$ 197</span><span class="text-base text-digital-clarity/60">/mês</span></div>
+                        <div class="price-annual hidden text-4xl font-extrabold text-gold-experience flex items-center gap-2"><span class="annual-amount">R$ 1.891</span><span class="text-base text-digital-clarity/60">/ano</span><span class="annual-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-emerald-600/20 text-emerald-300 border border-emerald-500/30">20% OFF</span></div>
+                        <div class="price-savings hidden text-xs text-emerald-300 mt-1">Economize 20% vs mensal</div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-digital-clarity/80 mb-6">
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Agentes intermediários e avançados</span></li>
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Memória estendida</span></li>
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Recursos avançados</span></li>
+                    </ul>
+                    <a class="hotmart-cta w-full inline-flex items-center justify-center bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-4 py-3 rounded-lg transition-colors"
+                       data-plan-id="master" data-checkout-plan="monthly"
+                       data-hotmart-monthly="https://pay.hotmart.com/SEU_LINK_MASTER_MENSAL"
+                       data-hotmart-annual="https://pay.hotmart.com/SEU_LINK_MASTER_ANUAL"
+                       href="https://pay.hotmart.com/SEU_LINK_MASTER_MENSAL">
+                        <i class="fas fa-shopping-cart mr-2"></i>Assinar Master
+                    </a>
+                </div>
+
+                <!-- Infinity (VIP) -->
+                <div class="relative bg-nexus-power/60 border border-gold-experience/20 rounded-2xl p-6">
+                    <div class="mb-4">
+                        <h3 class="font-playfair text-2xl font-bold text-digital-clarity">Nexus Infinity</h3>
+                        <p class="text-digital-clarity/60 text-sm">Acesso total</p>
+                    </div>
+                    <div class="mb-4">
+                        <div class="price-monthly text-4xl font-extrabold text-gold-experience" data-monthly="497"><span class="monthly-amount">R$ 497</span><span class="text-base text-digital-clarity/60">/mês</span></div>
+                        <div class="price-annual hidden text-4xl font-extrabold text-gold-experience flex items-center gap-2"><span class="annual-amount">R$ 4.771</span><span class="text-base text-digital-clarity/60">/ano</span><span class="annual-badge inline-flex items-center px-2 py-0.5 rounded-full text-xs bg-emerald-600/20 text-emerald-300 border border-emerald-500/30">20% OFF</span></div>
+                        <div class="price-savings hidden text-xs text-emerald-300 mt-1">Economize 20% vs mensal</div>
+                    </div>
+                    <ul class="space-y-2 text-sm text-digital-clarity/80 mb-6">
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Acesso total a todos os agentes</span></li>
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Memória ilimitada</span></li>
+                        <li class="flex items-start space-x-2"><i class="fas fa-check text-emerald-400 mt-1"></i><span>Todos os recursos disponíveis</span></li>
+                    </ul>
+                    <a class="hotmart-cta w-full inline-flex items-center justify-center bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-4 py-3 rounded-lg transition-colors"
+                       data-plan-id="infinity" data-checkout-plan="monthly"
+                       data-hotmart-monthly="https://pay.hotmart.com/SEU_LINK_INFINITY_MENSAL"
+                       data-hotmart-annual="https://pay.hotmart.com/SEU_LINK_INFINITY_ANUAL"
+                       href="https://pay.hotmart.com/SEU_LINK_INFINITY_MENSAL">
+                        <i class="fas fa-shopping-cart mr-2"></i>Assinar Infinity
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+    (function(){
+        function getUTMQuery(){
+            const search = window.location.search;
+            return search && search.length > 1 ? search : '';
+        }
+        function setCheckoutLinks(cycle){
+            const utm = getUTMQuery();
+            document.querySelectorAll('.hotmart-cta').forEach(a => {
+                const plan = a.getAttribute('data-plan-id');
+                a.setAttribute('data-checkout-plan', cycle);
+                const url = cycle === 'annual' ? a.getAttribute('data-hotmart-annual') : a.getAttribute('data-hotmart-monthly');
+                const finalUrl = url ? url + (utm ? (url.includes('?') ? '&' + utm.slice(1) : utm) : '') : '#';
+                a.setAttribute('href', finalUrl);
+            });
+        }
+        function updatePrices(cycle){
+            const showAnnual = cycle === 'annual';
+            const formatBRL = (n) => {
+                const v = Math.round(n);
+                return 'R$ ' + v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            };
+            document.querySelectorAll('.price-monthly').forEach(pm => {
+                const card = pm.closest('[class*="rounded-2xl"]') || pm.parentElement;
+                const monthly = Number(pm.getAttribute('data-monthly')) || 0;
+                const annualAmountEl = card.querySelector('.price-annual .annual-amount');
+                const savingsEl = card.querySelector('.price-savings');
+                if (showAnnual && monthly && annualAmountEl) {
+                    const annual = monthly * 12 * 0.8; // 20% OFF
+                    annualAmountEl.textContent = formatBRL(annual);
+                }
+                if (savingsEl) savingsEl.classList.toggle('hidden', !showAnnual);
+            });
+            document.querySelectorAll('.price-monthly').forEach(el => el.classList.toggle('hidden', showAnnual));
+            document.querySelectorAll('.price-annual').forEach(el => el.classList.toggle('hidden', !showAnnual));
+        }
+        function initToggle(){
+            const toggle = document.getElementById('billing-toggle');
+            const dot = document.querySelector('#billing-toggle + span .dot');
+            const applyState = () => {
+                const cycle = toggle.checked ? 'annual' : 'monthly';
+                dot && (dot.style.transform = toggle.checked ? 'translateX(24px)' : 'translateX(0)');
+                updatePrices(cycle);
+                setCheckoutLinks(cycle);
+                localStorage.setItem('billing_cycle', cycle);
+            };
+            if (!toggle) return;
+            // restore state
+            const stored = localStorage.getItem('billing_cycle');
+            if (stored === 'annual') toggle.checked = true;
+            applyState();
+            toggle.addEventListener('change', applyState);
+        }
+        document.addEventListener('DOMContentLoaded', initToggle);
+    })();
+    </script>
+
+    <!-- AI Agent Modal -->
+    <div id="ai-agent-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-nexus-power border border-gold-experience/30 rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden">
+                
+                <!-- Modal Header -->
+                <div class="bg-nexus-deep border-b border-gold-experience/30 p-6 flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center">
+                            <i class="fas fa-robot text-gold-experience text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-playfair text-2xl font-bold text-digital-clarity">Agente IA Nexialista</h3>
+                            <p class="text-digital-clarity/70">Seu consultor pessoal de transformação profissional</p>
+                        </div>
+                    </div>
+                    <button onclick="hideAIAgent()" class="text-digital-clarity/70 hover:text-digital-clarity">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                
+                <!-- Chat Interface -->
+                <div class="h-96 overflow-y-auto p-6 space-y-4" id="chat-container">
+                    <!-- Initial AI Message -->
+                    <div class="flex items-start space-x-3">
+                        <div class="w-8 h-8 bg-gold-experience/20 rounded-full flex items-center justify-center flex-shrink-0">
+                            <i class="fas fa-robot text-gold-experience text-sm"></i>
+                        </div>
+                        <div class="bg-nexus-deep border border-gold-experience/30 rounded-lg p-4 max-w-md">
+                            <p class="text-digital-clarity">
+                                Olá! Sou seu Agente IA Nexialista. Vou ajudá-lo(a) a descobrir seu arquétipo profissional e mapear seu caminho de transformação através do nosso diagnóstico exclusivo.
+                            </p>
+                            <p class="text-digital-clarity mt-2">
+                                Para começar, preciso de algumas informações básicas. Qual é o seu nome completo?
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Chat Input -->
+                <div class="border-t border-gold-experience/30 p-6">
+                    <div class="flex space-x-4">
+                        <input 
+                            type="text" 
+                            id="chat-input" 
+                            placeholder="Digite sua resposta..."
+                            class="flex-1 px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
+                        >
+                        <button 
+                            onclick="sendMessage()" 
+                            class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep font-semibold px-6 py-3 rounded-lg transition-colors"
+                        >
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="bg-nexus-deep border-t border-gold-experience/20 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center space-y-6">
+                <div class="flex items-center justify-center space-x-3">
+                    <img src="assets/logo-nexialista.png" alt="Academia Nexialista Logo" class="w-12 h-12 rounded-full object-cover logo-nexialista">
+                    <span class="font-playfair font-semibold text-2xl text-digital-clarity">Academia Nexialista</span>
+                </div>
+                
+                <p class="text-digital-clarity/60 max-w-2xl mx-auto">
+                    Transformando profissionais experientes em Nexialistas prósperos através da amplificação da expertise pela Inteligência Artificial.
+                </p>
+                
+                <div class="flex justify-center space-x-6">
+                    <a href="#" class="text-digital-clarity/60 hover:text-gold-experience transition-colors">
+                        <i class="fab fa-linkedin text-xl"></i>
+                    </a>
+                    <a href="#" class="text-digital-clarity/60 hover:text-gold-experience transition-colors">
+                        <i class="fab fa-youtube text-xl"></i>
+                    </a>
+                    <a href="#" class="text-digital-clarity/60 hover:text-gold-experience transition-colors">
+                        <i class="fab fa-whatsapp text-xl"></i>
+                    </a>
+                    <a href="#" class="text-digital-clarity/60 hover:text-gold-experience transition-colors">
+                        <i class="fas fa-envelope text-xl"></i>
+                    </a>
+                </div>
+                
+                <div class="border-t border-gold-experience/20 pt-6 text-center text-digital-clarity/50 text-sm">
+                    <p>&copy; 2024 Academia Nexialista. Todos os direitos reservados.</p>
+                    <p class="mt-2">Expertise Amplificada pela IA | Sua Relevância Garantida em um Mundo Digital</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- JavaScript -->
+    <script src="js/main.js"></script>
+    <script src="js/optimizations.js"></script>
+</body>
+</html>
