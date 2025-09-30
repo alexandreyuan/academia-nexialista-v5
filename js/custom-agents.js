@@ -568,7 +568,7 @@ async function testApiConnections() {
     }
 }
 
-// Test agent by opening it in a new window
+// Test agent by opening it in the same window (preview)
 function testAgentById(agentId) {
     const agent = agents.find(a => a.id === agentId);
     if (!agent) {
@@ -578,13 +578,15 @@ function testAgentById(agentId) {
     
     console.log('Testando agente:', agent);
     
-    // Abrir página de chat com o agente em nova aba
     // Salvar o agente no sessionStorage para a página de chat usar
     sessionStorage.setItem('testAgent', JSON.stringify(agent));
     
-    // Abrir em nova aba
-    const chatUrl = 'academia-nexialista.html?agent=' + encodeURIComponent(agentId);
-    window.open(chatUrl, '_blank');
+    // Abrir no mesmo preview (não em nova aba)
+    const chatUrl = agent.product === 'prospera-ia' 
+        ? 'prospera-ia.html?agent=' + encodeURIComponent(agentId)
+        : 'academia-nexialista.html?agent=' + encodeURIComponent(agentId);
+    
+    window.location.href = chatUrl;
     
     showToast(`Abrindo ${agent.name} para teste...`, 'success');
 }
