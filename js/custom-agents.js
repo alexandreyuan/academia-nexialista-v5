@@ -78,8 +78,12 @@ function createNewAgent() {
     const titleEl = document.getElementById('modal-title');
     if (titleEl) titleEl.textContent = 'Criar Novo Agente';
     
+    // Reset basic fields
     const nameEl = document.getElementById('agent-name');
     if (nameEl) nameEl.value = '';
+    
+    const avatarEl = document.getElementById('agent-avatar');
+    if (avatarEl) avatarEl.value = 'fas fa-robot';
     
     const descEl = document.getElementById('agent-description');
     if (descEl) descEl.value = '';
@@ -87,8 +91,48 @@ function createNewAgent() {
     const promptEl = document.getElementById('agent-system-prompt');
     if (promptEl) promptEl.value = '';
     
-    const modelEl = document.getElementById('agent-model');
-    if (modelEl) modelEl.value = 'gpt-4';
+    // Reset provider and model
+    const providerEl = document.getElementById('agent-provider');
+    if (providerEl) {
+        providerEl.value = 'openai';
+        updateModelOptions();
+    }
+    
+    setTimeout(() => {
+        const modelEl = document.getElementById('agent-model');
+        if (modelEl && modelEl.options.length > 0) {
+            modelEl.value = modelEl.options[0].value;
+        }
+    }, 50);
+    
+    // Reset product and category
+    const productEl = document.getElementById('agent-product');
+    if (productEl) productEl.value = 'academia-nexialista';
+    
+    const categoryEl = document.getElementById('agent-category');
+    if (categoryEl) categoryEl.value = 'Personalizado';
+    
+    // Reset temperature
+    const tempEl = document.getElementById('agent-temperature');
+    const tempValueEl = document.getElementById('temperature-value');
+    if (tempEl) {
+        tempEl.value = 0.7;
+        if (tempValueEl) tempValueEl.textContent = '0.7';
+    }
+    
+    // Reset max tokens
+    const maxTokensEl = document.getElementById('agent-max-tokens');
+    if (maxTokensEl) maxTokensEl.value = 2000;
+    
+    // Reset knowledge
+    const knowledgeEl = document.getElementById('agent-knowledge');
+    if (knowledgeEl) knowledgeEl.value = '';
+    
+    // Reset accessible plans - select all by default
+    const planCheckboxes = document.querySelectorAll('input[name="accessiblePlans"]');
+    planCheckboxes.forEach(cb => {
+        cb.checked = true;
+    });
     
     const modalEl = document.getElementById('agent-modal');
     if (modalEl) modalEl.classList.remove('hidden');
@@ -141,6 +185,25 @@ function editAgent(id) {
     const knowledgeEl = document.getElementById('agent-knowledge');
     if (knowledgeEl) knowledgeEl.value = agent.knowledge || '';
     
+    // Set avatar
+    const avatarEl = document.getElementById('agent-avatar');
+    if (avatarEl) avatarEl.value = agent.avatar || 'fas fa-robot';
+    
+    // Set product
+    const productEl = document.getElementById('agent-product');
+    if (productEl) productEl.value = agent.product || 'academia-nexialista';
+    
+    // Set category
+    const categoryEl = document.getElementById('agent-category');
+    if (categoryEl) categoryEl.value = agent.category || 'Personalizado';
+    
+    // Set accessible plans checkboxes
+    const planCheckboxes = document.querySelectorAll('input[name="accessiblePlans"]');
+    const agentPlans = Array.isArray(agent.accessible_plans) ? agent.accessible_plans : [];
+    planCheckboxes.forEach(cb => {
+        cb.checked = agentPlans.includes(cb.value);
+    });
+    
     const modalEl = document.getElementById('agent-modal');
     if (modalEl) modalEl.classList.remove('hidden');
 }
@@ -167,30 +230,46 @@ async function deleteAgent(id) {
 
 async function saveAgent() {
     const name = document.getElementById('agent-name').value;
+    const avatar = document.getElementById('agent-avatar')?.value || 'fas fa-robot';
     const description = document.getElementById('agent-description').value;
     const system_prompt = document.getElementById('agent-system-prompt').value;
     const model = document.getElementById('agent-model').value;
     const provider = document.getElementById('agent-provider')?.value || 'openai';
+    const product = document.getElementById('agent-product')?.value || 'academia-nexialista';
+    const category = document.getElementById('agent-category')?.value || 'Personalizado';
+    const temperature = parseFloat(document.getElementById('agent-temperature')?.value || 0.7);
+    const max_tokens = parseInt(document.getElementById('agent-max-tokens')?.value || 2000);
+    const knowledge = document.getElementById('agent-knowledge')?.value || '';
+    
+    // Get selected accessible plans from checkboxes
+    const accessible_plans = Array.from(
+        document.querySelectorAll('input[name="accessiblePlans"]:checked')
+    ).map(cb => cb.value);
     
     if (!name) {
         showToast('Nome é obrigatório', 'error');
         return;
     }
     
+    if (accessible_plans.length === 0) {
+        showToast('Selecione pelo menos um plano de acesso', 'error');
+        return;
+    }
+    
     // Generate ID from name if creating new agent
     const agentData = {
         name,
+        avatar,
         description,
         system_prompt,
         model,
         provider,
-        avatar: '🤖',
-        temperature: 0.7,
-        max_tokens: 2000,
-        knowledge: '',
-        product: 'academia-nexialista',
-        accessible_plans: ['basic', 'premium', 'vip', 'admin'],
-        category: 'custom'
+        product,
+        category,
+        temperature,
+        max_tokens,
+        knowledge,
+        accessible_plans
     };
     
     // Add ID for new agents
@@ -508,4 +587,74 @@ function testAgentById(agentId) {
     window.open(chatUrl, '_blank');
     
     showToast(`Abrindo ${agent.name} para teste...`, 'success');
+}
+
+// Update subscription options info display
+function updateSubscriptionOptions() {
+    const productSelect = document.getElementById('agent-product');
+    const infoDiv = document.getElementById('subscription-info');
+    const detailsDiv = document.getElementById('subscription-details');
+    
+    if (!productSelect || !infoDiv || !detailsDiv) return;
+    
+    const product = productSelect.value;
+    
+    if (!product) {
+        infoDiv.classList.add('hidden');
+        return;
+    }
+    
+    infoDiv.classList.remove('hidden');
+    
+    const productInfo = {
+        'prospera-ia': {
+            name: '📈 Prospera-IA',
+            description: 'Método estruturado em 4 fases para transformar expertise em ativos digitais',
+            agents: 'Oráculo, Nexus, Alquimista, Arquiteto'
+        },
+        'academia-nexialista': {
+            name: '🎓 Academia Nexialista',
+            description: 'Agentes educacionais e de transformação profissional',
+            agents: 'Guia, Visionário, Alquimista, Catalisador, etc.'
+        },
+        'movimento-nexialista': {
+            name: '🌍 Movimento Nexialista',
+            description: 'Agentes comunitários e de engajamento',
+            agents: 'Embaixador, Conector, Facilitador'
+        }
+    };
+    
+    const info = productInfo[product];
+    if (info) {
+        detailsDiv.innerHTML = `
+            <p class="mb-2"><strong>${info.name}</strong></p>
+            <p class="text-xs mb-2">${info.description}</p>
+            <p class="text-xs text-gold-experience/70">Exemplos: ${info.agents}</p>
+        `;
+    }
+}
+
+// Plan selection helper functions
+function selectAllPlans() {
+    const checkboxes = document.querySelectorAll('input[name="accessiblePlans"]');
+    checkboxes.forEach(cb => cb.checked = true);
+}
+
+function selectPremiumUp() {
+    const checkboxes = document.querySelectorAll('input[name="accessiblePlans"]');
+    checkboxes.forEach(cb => {
+        cb.checked = cb.value === 'premium' || cb.value === 'vip';
+    });
+}
+
+function selectVipOnly() {
+    const checkboxes = document.querySelectorAll('input[name="accessiblePlans"]');
+    checkboxes.forEach(cb => {
+        cb.checked = cb.value === 'vip';
+    });
+}
+
+function clearAllPlans() {
+    const checkboxes = document.querySelectorAll('input[name="accessiblePlans"]');
+    checkboxes.forEach(cb => cb.checked = false);
 }
