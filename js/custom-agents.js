@@ -111,8 +111,35 @@ function editAgent(id) {
     const promptEl = document.getElementById('agent-system-prompt');
     if (promptEl) promptEl.value = agent.system_prompt || '';
     
-    const modelEl = document.getElementById('agent-model');
-    if (modelEl) modelEl.value = agent.model || 'gpt-4';
+    // Set provider first
+    const providerEl = document.getElementById('agent-provider');
+    if (providerEl) {
+        providerEl.value = agent.provider || 'openai';
+        updateModelOptions(); // Update model options based on provider
+    }
+    
+    // Then set model after options are updated
+    setTimeout(() => {
+        const modelEl = document.getElementById('agent-model');
+        if (modelEl) modelEl.value = agent.model || '';
+    }, 50);
+    
+    // Set temperature and update display
+    const tempEl = document.getElementById('agent-temperature');
+    const tempValueEl = document.getElementById('temperature-value');
+    if (tempEl) {
+        const temp = agent.temperature || 0.7;
+        tempEl.value = temp;
+        if (tempValueEl) tempValueEl.textContent = temp;
+    }
+    
+    // Set max tokens
+    const maxTokensEl = document.getElementById('agent-max-tokens');
+    if (maxTokensEl) maxTokensEl.value = agent.max_tokens || 2000;
+    
+    // Set knowledge
+    const knowledgeEl = document.getElementById('agent-knowledge');
+    if (knowledgeEl) knowledgeEl.value = agent.knowledge || '';
     
     const modalEl = document.getElementById('agent-modal');
     if (modalEl) modalEl.classList.remove('hidden');

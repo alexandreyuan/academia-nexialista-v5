@@ -340,15 +340,18 @@
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium mb-2">
-                                            Temperatura (0.0 - 1.0)
-                                            <span class="text-xs text-digital-clarity/60">Criatividade das respostas</span>
+                                            Temperatura 
+                                            <span class="text-gold-experience font-mono" id="temperature-value">0.7</span>
+                                            <span class="text-xs text-digital-clarity/60 ml-2">Criatividade das respostas</span>
                                         </label>
                                         <input type="range" id="agent-temperature" name="temperature" 
-                                               min="0" max="1" step="0.1" value="0.7"
-                                               class="w-full">
-                                        <div class="text-xs text-digital-clarity/60 mt-1">
-                                            <span>Preciso</span>
-                                            <span class="float-right">Criativo</span>
+                                               min="0" max="2" step="0.1" value="0.7"
+                                               oninput="document.getElementById('temperature-value').textContent = this.value"
+                                               class="w-full h-2 bg-nexus-deep rounded-lg appearance-none cursor-pointer accent-gold-experience">
+                                        <div class="text-xs text-digital-clarity/60 mt-2 flex justify-between">
+                                            <span>🎯 Preciso (0.0)</span>
+                                            <span>⚖️ Balanceado (0.7)</span>
+                                            <span>🎨 Criativo (2.0)</span>
                                         </div>
                                     </div>
                                     <div>
@@ -598,9 +601,9 @@
     <!-- Page works without authentication - direct access enabled -->
 
     <!-- JavaScript -->
-    <script src="js/utils.js?v=12"></script>
-    <script src="js/prospera-memory.js?v=12"></script>
-    <script src="js/custom-agents.js?v=12"></script>
+    <script src="js/utils.js?v=13"></script>
+    <script src="js/prospera-memory.js?v=13"></script>
+    <script src="js/custom-agents.js?v=13"></script>
     <script>
       // Exibir botões admin-only e log de diagnóstico de fetch
       (function(){
