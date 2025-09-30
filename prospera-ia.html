@@ -767,42 +767,28 @@
         }
 
         // ======== Memória Compartilhada: atualizar contadores dinâmicos ========
-        function updateDynamicMemoryStatus() {
+        async function updateDynamicMemoryStatus() {
             try {
-                if (!currentUser) return;
-                const mem = new ProsperaMemorySystem(currentUser.email || 'guest');
-                const agentIds = Array.isArray(window.__prosperaAgentsIds) ? window.__prosperaAgentsIds : [];
-
-                const oracleCount = agentIds
-                    .filter(id => id.toLowerCase().includes('orac') || id.toLowerCase().includes('oracle'))
-                    .reduce((sum, id) => sum + (mem.memory[id]?.length || 0), 0);
-                const nexusCount = agentIds
-                    .filter(id => id.toLowerCase().includes('nexu'))
-                    .reduce((sum, id) => sum + (mem.memory[id]?.length || 0), 0);
-                const alchemistCount = agentIds
-                    .filter(id => id.toLowerCase().includes('alquim') || id.toLowerCase().includes('alchem'))
-                    .reduce((sum, id) => sum + (mem.memory[id]?.length || 0), 0);
-                const architectCount = agentIds
-                    .filter(id => id.toLowerCase().includes('arquit') || id.toLowerCase().includes('archit'))
-                    .reduce((sum, id) => sum + (mem.memory[id]?.length || 0), 0);
-
-                const noData = (oracleCount + nexusCount + alchemistCount + architectCount) === 0;
-                if (noData) {
-                    const total = mem.memory.sharedContext?.length || 0;
-                    const q = Math.floor(total / 4);
-                    document.getElementById('oracle-memory-status').textContent = q;
-                    document.getElementById('nexus-memory-status').textContent = q;
-                    document.getElementById('alchemist-memory-status').textContent = q;
-                    document.getElementById('architect-memory-status').textContent = total - 3*q;
+                if (!currentUser || !currentUser.email) {
+                    console.warn('⚠️ Não é possível atualizar memória: usuário não identificado');
                     return;
                 }
 
-                document.getElementById('oracle-memory-status').textContent = oracleCount;
-                document.getElementById('nexus-memory-status').textContent = nexusCount;
-                document.getElementById('alchemist-memory-status').textContent = alchemistCount;
-                document.getElementById('architect-memory-status').textContent = architectCount;
+                // Buscar contadores reais do banco de dados
+                if (window.ProsperaMemory && window.ProsperaMemory.getProsperaMessageCounts) {
+                    const counts = await window.ProsperaMemory.getProsperaMessageCounts(currentUser.email);
+                    
+                    document.getElementById('oracle-memory-status').textContent = counts.oraculo || 0;
+                    document.getElementById('nexus-memory-status').textContent = counts.nexus || 0;
+                    document.getElementById('alchemist-memory-status').textContent = counts.alquimista || 0;
+                    document.getElementById('architect-memory-status').textContent = counts.arquiteto || 0;
+                    
+                    console.log('📊 Memória atualizada:', counts);
+                } else {
+                    console.warn('⚠️ ProsperaMemory não disponível para atualizar contadores');
+                }
             } catch (e) {
-                console.warn('Memória dinâmica: erro ao atualizar status', e);
+                console.error('❌ Erro ao atualizar status de memória:', e);
             }
         }
 

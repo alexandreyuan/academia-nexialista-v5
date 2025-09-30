@@ -248,6 +248,43 @@ window.ProsperaMemory = {
             console.error('Erro ao obter estatísticas:', error);
             return {};
         }
+    },
+
+    /**
+     * Conta mensagens por tipo de agente do Prospera-IA
+     * @param {string} userEmail - Email do usuário
+     * @returns {Object} Contadores por tipo: { oraculo, alquimista, nexus, arquiteto }
+     */
+    getProsperaMessageCounts: async function(userEmail) {
+        try {
+            const conversations = await this.loadAllConversations(userEmail, 1000);
+            
+            const counts = {
+                oraculo: 0,
+                alquimista: 0,
+                nexus: 0,
+                arquiteto: 0
+            };
+            
+            conversations.forEach(conv => {
+                const agentName = (conv.agent_name || '').toLowerCase();
+                
+                if (agentName.includes('oráculo') || agentName.includes('oraculo') || agentName.includes('oracle')) {
+                    counts.oraculo++;
+                } else if (agentName.includes('alquimista') || agentName.includes('alchemist')) {
+                    counts.alquimista++;
+                } else if (agentName.includes('nexus')) {
+                    counts.nexus++;
+                } else if (agentName.includes('arquiteto') || agentName.includes('architect')) {
+                    counts.arquiteto++;
+                }
+            });
+            
+            return counts;
+        } catch (error) {
+            console.error('Erro ao contar mensagens Prospera:', error);
+            return { oraculo: 0, alquimista: 0, nexus: 0, arquiteto: 0 };
+        }
     }
 };
 

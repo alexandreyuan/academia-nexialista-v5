@@ -2,7 +2,9 @@
 
 function buildApiUrl(endpoint) {
     const baseUrl = window.location.origin;
-    return `${baseUrl}/${endpoint}`;
+    // Remove leading slash from endpoint if present to avoid double slashes
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+    return `${baseUrl}/${cleanEndpoint}`;
 }
 
 function showToast(message, type = 'info') {
