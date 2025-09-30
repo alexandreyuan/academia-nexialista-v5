@@ -442,7 +442,6 @@
                         <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center text-xl"> <i class="${agent.avatar||'fas fa-robot'}"></i> </div>
                         <div class="flex-1">
                             <h3 class="font-playfair font-bold text-lg text-gold-experience mb-1">${agent.name}</h3>
-                            <p class="text-xs text-digital-clarity/60 mb-2">${providerNice} • ${agent.model}</p>
                             <div class="flex flex-wrap gap-2 mb-3">${productTag}${planBadges}</div>
                             <p class="text-digital-clarity/70 text-sm mb-4">${agent.description||''}</p>
                             <div class="flex items-center justify-between mb-4">${lockIcon}</div>
@@ -473,9 +472,7 @@
             // Update modal header
             document.getElementById('agent-name').textContent = currentAgent.name;
             (function(){
-                const p = (currentAgent.provider||'').toLowerCase();
-                const providerNice = p==='openrouter'?'OpenRouter':p==='google'?'Google Gemini':p==='anthropic'?'Anthropic':p==='openai'?'OpenAI':(currentAgent.provider||'IA');
-                const spec = currentAgent.category || `${providerNice} • ${currentAgent.model||''}`;
+                const spec = currentAgent.category || 'Agente Nexialista';
                 document.getElementById('agent-specialty').textContent = spec;
             })();
             document.getElementById('agent-avatar').innerHTML = `<i class="${currentAgent.avatar || 'fas fa-robot'} text-nexus-deep"></i>`;

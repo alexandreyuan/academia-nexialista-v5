@@ -556,7 +556,6 @@
                         </div>
                         <div class="flex-1 min-w-0">
                             <h3 class="font-playfair font-bold text-xl text-gold-experience mb-1 truncate">${agent.name}</h3>
-                            <p class="text-xs text-digital-clarity/60 mb-3">${providerName} • ${agent.model}</p>
                             <p class="text-sm text-digital-clarity/80 mb-4 line-clamp-3">${agent.description || 'Agente do Prospera-IA'}</p>
                             <div class="flex flex-wrap gap-2 mb-4">${productTag}${planBadges}</div>
                             <button ${canAccess && hasKey ? '' : 'disabled'} onclick="openProsperaChatCustom('${agent.id}')" class="w-full ${buttonState} py-2 rounded-lg font-semibold transition-colors">
