@@ -10,9 +10,16 @@ document.addEventListener('DOMContentLoaded', async function() {
 async function loadAgents() {
     try {
         const response = await fetch(buildApiUrl('tables/custom_agents'));
+        console.log('loadAgents - Status:', response.status);
+        
         if (response.ok) {
             const data = await response.json();
-            agents = data.data || [];
+            console.log('loadAgents - Dados recebidos:', data);
+            
+            // O servidor retorna um array direto, não { data: [...] }
+            agents = Array.isArray(data) ? data : [];
+            console.log('loadAgents - Agentes carregados:', agents.length);
+            
             renderAgents();
         } else {
             console.error('Erro ao carregar agentes');
