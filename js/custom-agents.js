@@ -702,3 +702,25 @@ function clearAllPlans() {
     const checkboxes = document.querySelectorAll('input[name="accessiblePlans"]');
     checkboxes.forEach(cb => cb.checked = false);
 }
+
+// Toggle advanced settings visibility
+function toggleAdvancedSettings() {
+    const advancedSection = document.getElementById('advanced-settings');
+    const icon = document.getElementById('advanced-icon');
+    
+    if (!advancedSection || !icon) return;
+    
+    const isHidden = advancedSection.classList.contains('hidden');
+    
+    if (isHidden) {
+        // Show advanced settings
+        advancedSection.classList.remove('hidden');
+        icon.classList.remove('fa-chevron-right');
+        icon.classList.add('fa-chevron-down');
+    } else {
+        // Hide advanced settings
+        advancedSection.classList.add('hidden');
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-right');
+    }
+}
