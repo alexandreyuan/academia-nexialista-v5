@@ -187,10 +187,15 @@ async function showApiSettings() {
 
 async function loadApiKeys() {
     try {
-        const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'));
+        const url = buildApiUrl('tables/custom_agents_api_keys');
+        console.log('Carregando API keys de:', url);
+        
+        const response = await fetch(url);
+        console.log('Status da resposta:', response.status);
         
         if (response.ok) {
             const keys = await response.json();
+            console.log('Chaves carregadas:', keys.length, 'keys');
             
             // Clear all fields first
             document.getElementById('openai-key').value = '';
@@ -202,6 +207,7 @@ async function loadApiKeys() {
             keys.forEach(keyData => {
                 const provider = keyData.provider;
                 const apiKey = keyData.api_key;
+                console.log('Carregando chave para:', provider);
                 
                 if (provider === 'openai') {
                     document.getElementById('openai-key').value = apiKey;
@@ -213,6 +219,10 @@ async function loadApiKeys() {
                     document.getElementById('openrouter-key').value = apiKey;
                 }
             });
+            
+            console.log('API keys carregadas com sucesso!');
+        } else {
+            console.error('Erro ao carregar keys, status:', response.status);
         }
     } catch (error) {
         console.error('Erro ao carregar API keys:', error);
@@ -232,6 +242,8 @@ async function saveApiSettings() {
         { provider: 'openrouter', key: document.getElementById('openrouter-key').value }
     ];
     
+    console.log('Salvando API Keys:', apiKeys.map(k => ({ provider: k.provider, hasKey: !!k.key })));
+    
     // Filter out empty keys
     const keysToSave = apiKeys.filter(item => item.key && item.key.trim() !== '');
     
@@ -242,9 +254,13 @@ async function saveApiSettings() {
     
     try {
         let savedCount = 0;
+        let errors = [];
         
         for (const item of keysToSave) {
-            const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'), {
+            const url = buildApiUrl('tables/custom_agents_api_keys');
+            console.log('POST para:', url, 'Provider:', item.provider);
+            
+            const response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
@@ -253,8 +269,13 @@ async function saveApiSettings() {
                 })
             });
             
+            const data = await response.json();
+            console.log('Resposta:', response.status, data);
+            
             if (response.ok) {
                 savedCount++;
+            } else {
+                errors.push(`${item.provider}: ${data.error || 'Erro desconhecido'}`);
             }
         }
         
@@ -262,10 +283,10 @@ async function saveApiSettings() {
             showToast(`${savedCount} API Key(s) salva(s) com sucesso!`, 'success');
             closeApiModal();
         } else {
-            showToast('Erro ao salvar API Keys', 'error');
+            showToast('Erro ao salvar API Keys: ' + errors.join(', '), 'error');
         }
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro ao salvar:', error);
         showToast('Erro ao conectar com servidor', 'error');
     }
 }
