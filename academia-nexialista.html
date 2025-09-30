@@ -466,7 +466,7 @@
         // (Removido) Versão antiga do createAgentCard baseada em localStorage — substituída pela versão server-first acima.
 
         // Open chat with agent
-        function openChat(agentId) {
+        async function openChat(agentId) {
             currentAgent = agentsData.find(a => a.id === agentId);
             if (!currentAgent) return;
             
@@ -480,16 +480,39 @@
             })();
             document.getElementById('agent-avatar').innerHTML = `<i class="${currentAgent.avatar || 'fas fa-robot'} text-nexus-deep"></i>`;
             
-            // Load previous conversation if exists
+            // Load previous conversation from database (memória persistente)
             const chatMessages = document.getElementById('chat-messages');
             chatMessages.innerHTML = '';
             
-            if (conversationHistory[agentId]) {
-                conversationHistory[agentId].forEach(msg => {
-                    addMessageToChat(msg.content, msg.role === 'user');
-                });
-            } else {
-                // Initial greeting
+            const currentUser = (window.NexialistaAuth && window.NexialistaAuth.getCurrentUser) ? window.NexialistaAuth.getCurrentUser() : null;
+            let hasHistory = false;
+            
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                try {
+                    const history = await window.ProsperaMemory.loadAgentConversation(currentUser.email, agentId, 10);
+                    if (history && history.length > 0) {
+                        hasHistory = true;
+                        // Mostrar histórico no chat
+                        history.forEach(msg => {
+                            addMessageToChat(msg.message_content, msg.message_type === 'user');
+                        });
+                        // Inicializar conversationHistory para contexto local
+                        if (!conversationHistory[agentId]) conversationHistory[agentId] = [];
+                        history.forEach(msg => {
+                            conversationHistory[agentId].push({
+                                role: msg.message_type === 'user' ? 'user' : 'assistant',
+                                content: msg.message_content,
+                                timestamp: msg.created_at
+                            });
+                        });
+                    }
+                } catch (err) {
+                    console.warn('Erro ao carregar histórico do agente:', err);
+                }
+            }
+            
+            if (!hasHistory) {
+                // Initial greeting apenas se não houver histórico
                 addMessageToChat(`Olá! Eu sou ${currentAgent.name}, especialista em ${currentAgent.specialty}. Como posso expandir sua consciência hoje?`, false);
             }
             
@@ -515,6 +538,19 @@
             if (!conversationHistory[currentAgent.id]) conversationHistory[currentAgent.id] = [];
             conversationHistory[currentAgent.id].push({ role:'user', content: message, timestamp: new Date().toISOString() });
 
+            // Salvar mensagem do usuário no banco de dados (memória persistente)
+            const currentUser = (window.NexialistaAuth && window.NexialistaAuth.getCurrentUser) ? window.NexialistaAuth.getCurrentUser() : null;
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                await window.ProsperaMemory.saveInteraction(
+                    currentUser.email,
+                    currentAgent.id,
+                    currentAgent.name,
+                    'user',
+                    message,
+                    'academia-nexialista'
+                );
+            }
+
             const typingDiv = document.createElement('div');
             typingDiv.className = 'flex justify-start mb-4 typing-message';
             typingDiv.innerHTML = `<div class="bg-nexus-power border border-gold-experience/20 rounded-lg px-4 py-2 max-w-lg"><span class="text-digital-clarity/70 typing-indicator">Pensando</span></div>`;
@@ -526,6 +562,19 @@
                 typingDiv.remove();
                 addMessageToChat(response, false);
                 conversationHistory[currentAgent.id].push({ role:'assistant', content: response, timestamp: new Date().toISOString() });
+                
+                // Salvar resposta do agente no banco de dados (memória persistente)
+                if (currentUser && currentUser.email && window.ProsperaMemory) {
+                    await window.ProsperaMemory.saveInteraction(
+                        currentUser.email,
+                        currentAgent.id,
+                        currentAgent.name,
+                        'assistant',
+                        response,
+                        'academia-nexialista'
+                    );
+                }
+                
                 saveConversationHistory();
                 updateUserStats();
             } catch (e) {
@@ -541,6 +590,26 @@
 
             let systemPrompt = agent.systemPrompt || agent.system_prompt || '';
             if (agent.knowledge) systemPrompt += `\n\nBase de Conhecimento:\n${agent.knowledge}`;
+
+            // Carregar contexto compartilhado do banco de dados (memória de todos os agentes)
+            const currentUser = (window.NexialistaAuth && window.NexialistaAuth.getCurrentUser) ? window.NexialistaAuth.getCurrentUser() : null;
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                try {
+                    const sharedContext = await window.ProsperaMemory.loadSharedContext(
+                        currentUser.email, 
+                        'academia-nexialista', 
+                        15
+                    );
+                    if (sharedContext && sharedContext.length > 0) {
+                        const contextPrompt = window.ProsperaMemory.buildContextPrompt(sharedContext, 10);
+                        if (contextPrompt) {
+                            systemPrompt += contextPrompt;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Erro ao carregar contexto compartilhado:', e);
+                }
+            }
 
             const recent = (conversationHistory[agent.id]||[]).slice(-6);
             
