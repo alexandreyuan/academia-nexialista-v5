@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="version" content="1.1">
+    <meta name="version" content="1.2">
     <title>Academia Nexialista | Agentes de IA</title>
     
     <!-- Favicons -->
@@ -214,7 +214,7 @@
         })();
 
         // Check authentication (server-first compat)
-        function checkAuth() {
+        async function checkAuth() {
             // 1) Tentar sessão do Auth System
             if (window.NexialistaAuth && typeof window.NexialistaAuth.isLoggedIn==='function' && window.NexialistaAuth.isLoggedIn()) {
                 const u = window.NexialistaAuth.currentUser;
@@ -234,7 +234,9 @@
                 } catch(e) { window.location.href='members.html'; return; }
             }
             document.getElementById('user-plan').textContent = getPlanDisplayName(currentUser.plan);
-            loadApiKeys();
+            
+            // Load API keys first (await), then load agents
+            await loadApiKeys();
             loadAgents();
             loadConversationHistory();
         }
@@ -262,9 +264,29 @@
             localStorage.setItem(`nexialista_history_${currentUser.email}`, JSON.stringify(conversationHistory));
         }
 
-        // Load API keys
-        function loadApiKeys(){
-            try { apiKeys = JSON.parse(localStorage.getItem('custom_agents_api_keys')||'{}'); } catch { apiKeys = {}; }
+        // Load API keys from database
+        async function loadApiKeys(){
+            try {
+                const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'));
+                if (response.ok) {
+                    const keys = await response.json();
+                    console.log('API Keys loaded:', keys.length, 'keys');
+                    
+                    // Convert array to object { provider: key }
+                    apiKeys = {};
+                    keys.forEach(keyData => {
+                        apiKeys[keyData.provider] = keyData.api_key;
+                    });
+                    
+                    console.log('API Keys available for:', Object.keys(apiKeys).join(', '));
+                } else {
+                    console.warn('Failed to load API keys, using empty object');
+                    apiKeys = {};
+                }
+            } catch (error) {
+                console.error('Error loading API keys:', error);
+                apiKeys = {};
+            }
         }
 
         // Load agents from server (server-first)
