@@ -43,16 +43,26 @@ function renderAgents() {
     
     if (emptyState) emptyState.classList.add('hidden');
     
-    grid.innerHTML = agents.map(agent => `
+    grid.innerHTML = agents.map(agent => {
+        // Product tag
+        const productTag = getProductTag(agent.product);
+        
+        // Plans tags
+        const plansTags = getPlansTagsHTML(agent.accessible_plans);
+        
+        return `
         <div class="bg-nexus-power border border-gold-experience/30 rounded-lg p-6 hover:border-gold-experience/60 transition-all">
             <div class="flex items-start justify-between mb-4">
-                <div>
+                <div class="flex-1">
                     <h3 class="text-xl font-semibold text-gold-experience mb-2">${agent.name || 'Sem nome'}</h3>
-                    <p class="text-digital-clarity/70 text-sm">${agent.provider || 'openai'} / ${agent.model || 'GPT-4'}</p>
+                    <p class="text-digital-clarity/70 text-sm mb-2">${agent.provider || 'openai'} / ${agent.model || 'GPT-4'}</p>
+                    
+                    <!-- Tags: Product and Plans -->
+                    <div class="flex flex-wrap gap-2 mt-3">
+                        ${productTag}
+                        ${plansTags}
+                    </div>
                 </div>
-                <span class="px-3 py-1 bg-gold-experience/20 text-gold-experience text-xs rounded-full">
-                    Custom
-                </span>
             </div>
             <p class="text-digital-clarity/80 text-sm mb-4 line-clamp-3">${agent.description || 'Sem descrição'}</p>
             <div class="flex items-center justify-between pt-4 border-t border-gold-experience/20">
@@ -70,7 +80,39 @@ function renderAgents() {
                 </div>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+}
+
+// Helper function to get product tag HTML
+function getProductTag(product) {
+    const products = {
+        'prospera-ia': { icon: '📈', label: 'Prospera-IA', color: 'bg-purple-600/20 text-purple-400 border-purple-500/30' },
+        'academia-nexialista': { icon: '🎓', label: 'Academia', color: 'bg-blue-600/20 text-blue-400 border-blue-500/30' },
+        'movimento-nexialista': { icon: '🌍', label: 'Movimento', color: 'bg-green-600/20 text-green-400 border-green-500/30' }
+    };
+    
+    const prod = products[product] || { icon: '📦', label: product || 'N/A', color: 'bg-gray-600/20 text-gray-400 border-gray-500/30' };
+    return `<span class="px-2 py-1 ${prod.color} border text-xs rounded-full">${prod.icon} ${prod.label}</span>`;
+}
+
+// Helper function to get plans tags HTML
+function getPlansTagsHTML(accessiblePlans) {
+    if (!accessiblePlans || accessiblePlans.length === 0) {
+        return '<span class="px-2 py-1 bg-red-600/20 text-red-400 border border-red-500/30 text-xs rounded-full">⚠️ Sem planos</span>';
+    }
+    
+    const plans = Array.isArray(accessiblePlans) ? accessiblePlans : [];
+    const planIcons = {
+        'basic': { icon: '🔰', label: 'Basic', color: 'bg-gray-600/20 text-gray-300 border-gray-500/30' },
+        'premium': { icon: '💎', label: 'Premium', color: 'bg-purple-600/20 text-purple-300 border-purple-500/30' },
+        'vip': { icon: '🌟', label: 'VIP', color: 'bg-yellow-600/20 text-yellow-300 border-yellow-500/30' }
+    };
+    
+    return plans.map(plan => {
+        const p = planIcons[plan] || { icon: '❓', label: plan, color: 'bg-gray-600/20 text-gray-400 border-gray-500/30' };
+        return `<span class="px-2 py-1 ${p.color} border text-xs rounded-full">${p.icon} ${p.label}</span>`;
+    }).join('');
 }
 
 function createNewAgent() {

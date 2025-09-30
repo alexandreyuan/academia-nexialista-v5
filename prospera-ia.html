@@ -526,6 +526,7 @@
                 const hasKey = !!apiKeys[agent.provider];
                 const plans = normalizePlans(agent);
                 const planBadges = (plans || []).map(p => getPlanBadge(p)).join(' ');
+                const productTag = getProductBadge(agent.product);
                 const canAccess = canAccessAgent(agent, userLevel, isAdmin);
                 const requiredPlan = getMinPlan(plans) || 'basic';
                 const lockIcon = canAccess ? 'fa-lock-open text-emerald-400' : 'fa-lock text-red-400';
@@ -545,7 +546,7 @@
                             <h3 class="font-playfair font-bold text-xl text-gold-experience mb-1 truncate">${agent.name}</h3>
                             <p class="text-xs text-digital-clarity/60 mb-3">${providerName} • ${agent.model}</p>
                             <p class="text-sm text-digital-clarity/80 mb-4 line-clamp-3">${agent.description || 'Agente do Prospera-IA'}</p>
-                            <div class="flex flex-wrap gap-2 mb-4">${planBadges}</div>
+                            <div class="flex flex-wrap gap-2 mb-4">${productTag}${planBadges}</div>
                             <button ${canAccess && hasKey ? '' : 'disabled'} onclick="openProsperaChatCustom('${agent.id}')" class="w-full ${buttonState} py-2 rounded-lg font-semibold transition-colors">
                                 <i class="fas fa-comments mr-2"></i>${buttonLabel}
                             </button>
@@ -564,6 +565,17 @@
             };
             const x = map[level] || { c:'gray', icon:'❓', label: level };
             return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-${x.c}-600/20 text-${x.c}-400 border border-${x.c}-500/30">${x.icon} ${x.label}</span>`;
+        }
+
+        function getProductBadge(product) {
+            const products = {
+                'prospera-ia': { icon: '📈', label: 'Prospera-IA', color: 'bg-purple-600/20 text-purple-400 border-purple-500/30' },
+                'academia-nexialista': { icon: '🎓', label: 'Academia', color: 'bg-blue-600/20 text-blue-400 border-blue-500/30' },
+                'movimento-nexialista': { icon: '🌍', label: 'Movimento', color: 'bg-green-600/20 text-green-400 border-green-500/30' }
+            };
+            
+            const prod = products[product] || { icon: '📦', label: product || 'N/A', color: 'bg-gray-600/20 text-gray-400 border-gray-500/30' };
+            return `<span class="inline-flex items-center px-2 py-1 ${prod.color} border text-xs rounded-full">${prod.icon} ${prod.label}</span>`;
         }
 
         function normalizePlans(agent) {
