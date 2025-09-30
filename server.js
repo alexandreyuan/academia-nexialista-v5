@@ -427,6 +427,105 @@ app.post('/tables/custom_agents_api_keys', async (req, res) => {
   }
 });
 
+// Conversation Memory Endpoints
+app.post('/api/conversations', async (req, res) => {
+  try {
+    const { user_email, agent_id, agent_name, message_type, message_content, product, metadata } = req.body;
+
+    if (!user_email || !agent_id || !message_type || !message_content) {
+      return res.status(400).json({ error: 'user_email, agent_id, message_type e message_content são obrigatórios' });
+    }
+
+    if (!['user', 'assistant'].includes(message_type)) {
+      return res.status(400).json({ error: 'message_type deve ser "user" ou "assistant"' });
+    }
+
+    const result = await pool.query(
+      `INSERT INTO agent_conversations 
+       (user_email, agent_id, agent_name, message_type, message_content, product, metadata)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
+       RETURNING *`,
+      [user_email, agent_id, agent_name, message_type, message_content, product, metadata || {}]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error('Erro ao salvar conversa:', error);
+    res.status(500).json({ error: 'Erro ao salvar conversa' });
+  }
+});
+
+app.get('/api/conversations/:user_email', async (req, res) => {
+  try {
+    const { user_email } = req.params;
+    const limit = parseInt(req.query.limit) || 100;
+
+    const result = await pool.query(
+      `SELECT * FROM agent_conversations 
+       WHERE user_email = $1 
+       ORDER BY created_at DESC 
+       LIMIT $2`,
+      [user_email, limit]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar conversas:', error);
+    res.status(500).json({ error: 'Erro ao buscar conversas' });
+  }
+});
+
+app.get('/api/conversations/:user_email/:agent_id', async (req, res) => {
+  try {
+    const { user_email, agent_id } = req.params;
+    const limit = parseInt(req.query.limit) || 50;
+
+    const result = await pool.query(
+      `SELECT * FROM agent_conversations 
+       WHERE user_email = $1 AND agent_id = $2 
+       ORDER BY created_at ASC 
+       LIMIT $3`,
+      [user_email, agent_id, limit]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar conversas do agente:', error);
+    res.status(500).json({ error: 'Erro ao buscar conversas do agente' });
+  }
+});
+
+app.get('/api/shared-context/:user_email', async (req, res) => {
+  try {
+    const { user_email } = req.params;
+    const limit = parseInt(req.query.limit) || 20;
+    const product = req.query.product;
+
+    let query = `
+      SELECT ac.*, ca.name as agent_name, ca.product 
+      FROM agent_conversations ac
+      LEFT JOIN custom_agents ca ON ac.agent_id = ca.id
+      WHERE ac.user_email = $1
+    `;
+    const params = [user_email];
+
+    if (product) {
+      query += ` AND ca.product = $2`;
+      params.push(product);
+    }
+
+    query += ` ORDER BY ac.created_at DESC LIMIT $${params.length + 1}`;
+    params.push(limit);
+
+    const result = await pool.query(query, params);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar contexto compartilhado:', error);
+    res.status(500).json({ error: 'Erro ao buscar contexto compartilhado' });
+  }
+});
+
 app.use(express.static('.'));
 
 app.get('/', (req, res) => {
