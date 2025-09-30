@@ -47,6 +47,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     localStorage.setItem('user_name', data.name);
                     localStorage.setItem('user_subscription', data.subscription_level);
                     localStorage.setItem('user_role', data.role);
+                    
+                    // Salvar currentUser para compatibilidade com dashboard
+                    const currentUser = {
+                        email: data.email,
+                        name: data.name,
+                        subscription: data.subscription_level,
+                        role: data.role
+                    };
+                    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                    
                     window.location.href = 'members-dashboard.html';
                 } else {
                     alert(data.error || 'Email ou senha incorretos');
