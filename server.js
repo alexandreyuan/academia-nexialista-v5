@@ -107,6 +107,42 @@ const ALLOWED_AGENT_FIELDS = [
   'product', 'accessible_plans', 'category', 'is_active'
 ];
 
+app.post('/api/auth/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
+    }
+
+    const result = await pool.query(
+      'SELECT * FROM users WHERE email = $1',
+      [email.toLowerCase()]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ error: 'Email ou senha incorretos' });
+    }
+
+    const user = result.rows[0];
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      return res.status(401).json({ error: 'Email ou senha incorretos' });
+    }
+
+    res.json({
+      email: user.email,
+      name: user.name,
+      subscription_level: user.subscription_level,
+      role: user.role
+    });
+  } catch (error) {
+    console.error('Erro ao fazer login:', error);
+    res.status(500).json({ error: 'Erro ao processar login' });
+  }
+});
+
 app.get('/api/tables/custom_agents', async (req, res) => {
   try {
     const limit = parseInt(req.query.limit) || 1000;
