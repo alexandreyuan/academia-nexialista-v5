@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const bcrypt = require('bcryptjs');
 const { Pool } = require('pg');
 const path = require('path');
 
@@ -72,19 +73,26 @@ async function initDatabase() {
 
     const userCheck = await pool.query('SELECT COUNT(*) FROM users');
     if (parseInt(userCheck.rows[0].count) === 0) {
-      await pool.query(`
-        INSERT INTO users (email, password, name, subscription_level, role) VALUES
-        ('explorer@nexialista.com', 'explorer123', 'Explorer User', 'basic', 'member'),
-        ('master@nexialista.com', 'master123', 'Master User', 'premium', 'member'),
-        ('infinity@nexialista.com', 'infinity123', 'Infinity User', 'vip', 'member'),
-        ('demo@nexialista.com', 'demo123', 'Demo User', 'premium', 'member'),
-        ('basic@nexialista.com', 'basic123', 'Basic User', 'basic', 'member'),
-        ('premium@nexialista.com', 'premium123', 'Premium User', 'premium', 'member'),
-        ('vip@nexialista.com', 'vip123', 'VIP User', 'vip', 'member'),
-        ('admin@nexialista.com', 'admin123', 'Admin User', 'vip', 'admin'),
-        ('yuan@apxconsultoria.com', 'yuan123', 'Yuan', 'vip', 'founder')
-      `);
-      console.log('✅ Usuários padrão criados com sucesso');
+      const users = [
+        { email: 'explorer@nexialista.com', password: 'explorer123', name: 'Explorer User', level: 'basic', role: 'member' },
+        { email: 'master@nexialista.com', password: 'master123', name: 'Master User', level: 'premium', role: 'member' },
+        { email: 'infinity@nexialista.com', password: 'infinity123', name: 'Infinity User', level: 'vip', role: 'member' },
+        { email: 'demo@nexialista.com', password: 'demo123', name: 'Demo User', level: 'premium', role: 'member' },
+        { email: 'basic@nexialista.com', password: 'basic123', name: 'Basic User', level: 'basic', role: 'member' },
+        { email: 'premium@nexialista.com', password: 'premium123', name: 'Premium User', level: 'premium', role: 'member' },
+        { email: 'vip@nexialista.com', password: 'vip123', name: 'VIP User', level: 'vip', role: 'member' },
+        { email: 'admin@nexialista.com', password: 'admin123', name: 'Admin User', level: 'vip', role: 'admin' },
+        { email: 'yuan@apxconsultoria.com', password: 'yuan123', name: 'Yuan', level: 'vip', role: 'founder' }
+      ];
+
+      for (const user of users) {
+        const hashedPassword = await bcrypt.hash(user.password, 10);
+        await pool.query(
+          'INSERT INTO users (email, password, name, subscription_level, role) VALUES ($1, $2, $3, $4, $5)',
+          [user.email, hashedPassword, user.name, user.level, user.role]
+        );
+      }
+      console.log('✅ Usuários padrão criados com senhas seguras');
     }
 
     console.log('✅ Banco de dados inicializado com sucesso');
@@ -93,9 +101,15 @@ async function initDatabase() {
   }
 }
 
+const ALLOWED_AGENT_FIELDS = [
+  'name', 'avatar', 'description', 'provider', 'model', 
+  'system_prompt', 'temperature', 'max_tokens', 'knowledge',
+  'product', 'accessible_plans', 'category', 'is_active'
+];
+
 app.get('/api/tables/custom_agents', async (req, res) => {
   try {
-    const limit = req.query.limit || 1000;
+    const limit = parseInt(req.query.limit) || 1000;
     const result = await pool.query(
       'SELECT * FROM custom_agents WHERE is_active = true ORDER BY created_at DESC LIMIT $1',
       [limit]
@@ -103,7 +117,7 @@ app.get('/api/tables/custom_agents', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('Erro ao buscar agentes:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao buscar agentes' });
   }
 });
 
@@ -119,7 +133,7 @@ app.get('/api/tables/custom_agents/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao buscar agente:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao buscar agente' });
   }
 });
 
@@ -130,6 +144,10 @@ app.post('/api/tables/custom_agents', async (req, res) => {
       system_prompt, temperature, max_tokens, knowledge,
       product, accessible_plans, category
     } = req.body;
+
+    if (!id || !name) {
+      return res.status(400).json({ error: 'ID e nome são obrigatórios' });
+    }
 
     const result = await pool.query(
       `INSERT INTO custom_agents 
@@ -145,7 +163,10 @@ app.post('/api/tables/custom_agents', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao criar agente:', error);
-    res.status(500).json({ error: error.message });
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Agente com este ID já existe' });
+    }
+    res.status(500).json({ error: 'Erro ao criar agente' });
   }
 });
 
@@ -157,12 +178,16 @@ app.patch('/api/tables/custom_agents/:id', async (req, res) => {
     let paramCount = 1;
 
     Object.keys(req.body).forEach(key => {
-      if (key !== 'id') {
+      if (ALLOWED_AGENT_FIELDS.includes(key)) {
         updateFields.push(`${key} = $${paramCount}`);
         values.push(req.body[key]);
         paramCount++;
       }
     });
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo válido para atualizar' });
+    }
 
     updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
@@ -183,7 +208,7 @@ app.patch('/api/tables/custom_agents/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao atualizar agente:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao atualizar agente' });
   }
 });
 
@@ -201,13 +226,13 @@ app.delete('/api/tables/custom_agents/:id', async (req, res) => {
     res.json({ message: 'Agente excluído com sucesso', agent: result.rows[0] });
   } catch (error) {
     console.error('Erro ao excluir agente:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao excluir agente' });
   }
 });
 
 app.get('/tables/custom_agents', async (req, res) => {
   try {
-    const limit = req.query.limit || 1000;
+    const limit = parseInt(req.query.limit) || 1000;
     const result = await pool.query(
       'SELECT * FROM custom_agents WHERE is_active = true ORDER BY created_at DESC LIMIT $1',
       [limit]
@@ -215,7 +240,7 @@ app.get('/tables/custom_agents', async (req, res) => {
     res.json(result.rows);
   } catch (error) {
     console.error('Erro ao buscar agentes:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao buscar agentes' });
   }
 });
 
@@ -231,7 +256,7 @@ app.get('/tables/custom_agents/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao buscar agente:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao buscar agente' });
   }
 });
 
@@ -242,6 +267,10 @@ app.post('/tables/custom_agents', async (req, res) => {
       system_prompt, temperature, max_tokens, knowledge,
       product, accessible_plans, category
     } = req.body;
+
+    if (!id || !name) {
+      return res.status(400).json({ error: 'ID e nome são obrigatórios' });
+    }
 
     const result = await pool.query(
       `INSERT INTO custom_agents 
@@ -257,7 +286,10 @@ app.post('/tables/custom_agents', async (req, res) => {
     res.status(201).json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao criar agente:', error);
-    res.status(500).json({ error: error.message });
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Agente com este ID já existe' });
+    }
+    res.status(500).json({ error: 'Erro ao criar agente' });
   }
 });
 
@@ -269,12 +301,16 @@ app.patch('/tables/custom_agents/:id', async (req, res) => {
     let paramCount = 1;
 
     Object.keys(req.body).forEach(key => {
-      if (key !== 'id') {
+      if (ALLOWED_AGENT_FIELDS.includes(key)) {
         updateFields.push(`${key} = $${paramCount}`);
         values.push(req.body[key]);
         paramCount++;
       }
     });
+
+    if (updateFields.length === 0) {
+      return res.status(400).json({ error: 'Nenhum campo válido para atualizar' });
+    }
 
     updateFields.push(`updated_at = CURRENT_TIMESTAMP`);
     values.push(id);
@@ -295,7 +331,7 @@ app.patch('/tables/custom_agents/:id', async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     console.error('Erro ao atualizar agente:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao atualizar agente' });
   }
 });
 
@@ -313,7 +349,7 @@ app.delete('/tables/custom_agents/:id', async (req, res) => {
     res.json({ message: 'Agente excluído com sucesso', agent: result.rows[0] });
   } catch (error) {
     console.error('Erro ao excluir agente:', error);
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ error: 'Erro ao excluir agente' });
   }
 });
 
