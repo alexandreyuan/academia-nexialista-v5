@@ -6,7 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="version" content="1.2">
+    <meta name="version" content="1.3">
     <title>Academia Nexialista | Agentes de IA</title>
     
     <!-- Favicons -->
@@ -507,10 +507,17 @@
             const key = apiKeys[provider];
             if (!key) throw new Error(`Chave API ausente para ${provider}`);
 
-            let systemPrompt = agent.systemPrompt || '';
+            let systemPrompt = agent.systemPrompt || agent.system_prompt || '';
             if (agent.knowledge) systemPrompt += `\n\nBase de Conhecimento:\n${agent.knowledge}`;
 
             const recent = (conversationHistory[agent.id]||[]).slice(-6);
+            
+            // Convert temperature and max_tokens to numbers
+            const temperature = parseFloat(agent.temperature) || 0.7;
+            const maxTokens = parseInt(agent.max_tokens || agent.maxTokens) || 2000;
+            
+            console.log('Calling API with:', { provider, model: agent.model, temperature, maxTokens });
+            
             if (provider==='openai' || provider==='openrouter'){
                 const endpoint = provider==='openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
                 const res = await fetch(endpoint, {
@@ -523,8 +530,8 @@
                     body: JSON.stringify({
                         model: agent.model,
                         messages: [ {role:'system', content: systemPrompt}, ...recent, {role:'user', content: userMessage} ],
-                        temperature: agent.temperature || 0.7,
-                        max_tokens: agent.maxTokens || 1000
+                        temperature: temperature,
+                        max_tokens: maxTokens
                     })
                 });
                 if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
@@ -534,7 +541,7 @@
             if (provider==='anthropic'){
                 const res = await fetch('https://api.anthropic.com/v1/messages', {
                     method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': key, 'anthropic-version':'2023-06-01' },
-                    body: JSON.stringify({ model: agent.model, max_tokens: agent.maxTokens||1000, temperature: agent.temperature||0.7, system: systemPrompt, messages:[{role:'user', content:userMessage}] })
+                    body: JSON.stringify({ model: agent.model, max_tokens: maxTokens, temperature: temperature, system: systemPrompt, messages:[{role:'user', content:userMessage}] })
                 });
                 if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
                 const data = await res.json();
@@ -543,10 +550,28 @@
             if (provider==='google'){
                 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${agent.model}:generateContent?key=${key}`;
                 const prompt = `${systemPrompt}\n\nUser: ${userMessage}\nAssistant:`;
-                const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }], generationConfig:{ temperature: agent.temperature||0.7, maxOutputTokens: agent.maxTokens||1000 } }) });
+                const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }], generationConfig:{ temperature: temperature, maxOutputTokens: maxTokens } }) });
                 if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
                 const data = await res.json();
                 return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Resposta vazia do provedor';
+            }
+            if (provider==='groq'){
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        model: agent.model,
+                        messages: [ {role:'system', content: systemPrompt}, ...recent, {role:'user', content: userMessage} ],
+                        temperature: temperature,
+                        max_tokens: maxTokens
+                    })
+                });
+                if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+                const data = await res.json();
+                return data.choices?.[0]?.message?.content || 'Resposta vazia do provedor';
             }
             throw new Error('Provedor não suportado');
         }
