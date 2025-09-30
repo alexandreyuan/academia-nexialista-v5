@@ -216,3 +216,75 @@ async function saveApiSettings() {
         showToast('Erro ao conectar com servidor', 'error');
     }
 }
+
+// Update model options based on selected provider
+function updateModelOptions() {
+    const providerSelect = document.getElementById('agent-provider');
+    const modelSelect = document.getElementById('agent-model');
+    
+    if (!providerSelect || !modelSelect) return;
+    
+    const provider = providerSelect.value;
+    
+    const modelsByProvider = {
+        google: [
+            { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+            { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+            { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+            { value: 'gemini-nano', label: 'Gemini Nano' }
+        ],
+        openai: [
+            { value: 'gpt-5', label: 'GPT-5' },
+            { value: 'gpt-5-mini', label: 'GPT-5 mini' },
+            { value: 'gpt-5-nano', label: 'GPT-5 nano' },
+            { value: 'o4-mini-deep-research', label: 'o4-mini-deep-research' }
+        ],
+        openrouter: [
+            { value: 'openrouter/quasar-alpha', label: 'Quasar Alpha' },
+            { value: 'grok-code-fast-1', label: 'Grok Code Fast 1' },
+            { value: 'claude-sonnet-4', label: 'Claude Sonnet 4' },
+            { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+            { value: 'grok-4-fast-free', label: 'Grok 4 Fast (free)' },
+            { value: 'deepseek-v3.1-free', label: 'DeepSeek V3.1 (free)' },
+            { value: 'gemini-2.0-flash-experimental-free', label: 'Gemini 2.0 Flash Experimental (free)' },
+            { value: 'deepseek-v3-0324', label: 'DeepSeek V3 0324' },
+            { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
+            { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini' },
+            { value: 'gpt-5-mini', label: 'GPT-5 Mini' }
+        ],
+        groq: [
+            { value: 'llama-3.3-70b', label: 'Llama 3.3 70B' },
+            { value: 'llama-3.1-8b', label: 'Llama 3.1 8B' },
+            { value: 'mixtral-8x7b', label: 'Mixtral 8x7B' }
+        ]
+    };
+    
+    // Clear current options
+    modelSelect.innerHTML = '';
+    
+    if (!provider) {
+        modelSelect.innerHTML = '<option value="">Primeiro selecione um provedor</option>';
+        return;
+    }
+    
+    const models = modelsByProvider[provider] || [];
+    
+    if (models.length === 0) {
+        modelSelect.innerHTML = '<option value="">Nenhum modelo disponível</option>';
+        return;
+    }
+    
+    // Add default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecione um modelo...';
+    modelSelect.appendChild(defaultOption);
+    
+    // Add provider models
+    models.forEach(model => {
+        const option = document.createElement('option');
+        option.value = model.value;
+        option.textContent = model.label;
+        modelSelect.appendChild(option);
+    });
+}
