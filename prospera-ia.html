@@ -417,15 +417,31 @@
         let currentChatAgent = null;
         let chatHistory = [];
 
-        function loadApiKeys() {
+        async function loadApiKeys() {
             try {
-                const stored = localStorage.getItem('custom_agents_api_keys');
-                apiKeys = stored ? JSON.parse(stored) : {};
-            } catch { apiKeys = {}; }
+                // Carregar chaves do servidor (fonte de verdade)
+                const res = await fetch(buildApiUrl('tables/custom_agents_api_keys'));
+                if (res.ok) {
+                    const keys = await res.json();
+                    apiKeys = {};
+                    keys.forEach(k => {
+                        if (k.provider && k.api_key) {
+                            apiKeys[k.provider] = k.api_key;
+                        }
+                    });
+                    console.log('✅ Chaves de API carregadas do servidor:', Object.keys(apiKeys));
+                } else {
+                    console.warn('⚠️ Falha ao carregar chaves de API do servidor');
+                    apiKeys = {};
+                }
+            } catch (err) {
+                console.warn('⚠️ Erro ao carregar chaves de API:', err);
+                apiKeys = {};
+            }
         }
 
         async function initProsperaAgents() {
-            loadApiKeys();
+            await loadApiKeys();
             let list = [];
             // 1) Tentar carregar do servidor (fonte de verdade)
             let __fetchStatus = 'pending'; let __fetchError = ''; let __path = 'relative';
