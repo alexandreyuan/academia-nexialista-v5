@@ -333,20 +333,30 @@
                 
                 <!-- Input Area -->
                 <div class="border-t border-gold-experience/30 p-4">
-                    <div class="flex space-x-2">
-                        <input 
-                            type="text" 
-                            id="prospera-chat-input" 
-                            placeholder="Digite sua mensagem..."
-                            class="flex-1 bg-nexus-deep border border-gold-experience/30 rounded-lg px-4 py-2 text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:outline-none"
-                            onkeypress="handleProsperaChatKeypress(event)"
-                        >
+                    <div class="flex flex-col space-y-2">
+                        <div class="flex space-x-2">
+                            <input 
+                                type="text" 
+                                id="prospera-chat-input" 
+                                placeholder="Digite sua mensagem..."
+                                class="flex-1 bg-nexus-deep border border-gold-experience/30 rounded-lg px-4 py-2 text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:outline-none"
+                                onkeypress="handleProsperaChatKeypress(event)"
+                            >
+                            <button 
+                                onclick="sendProsperaMessage()"
+                                id="send-button"
+                                class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold transition-colors"
+                            >
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
                         <button 
-                            onclick="sendProsperaMessage()"
-                            id="send-button"
-                            class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold transition-colors"
+                            onclick="generateProsperaReport()"
+                            id="generate-report-button"
+                            class="w-full bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors flex items-center justify-center space-x-2"
                         >
-                            <i class="fas fa-paper-plane"></i>
+                            <i class="fas fa-file-alt"></i>
+                            <span>Gerar Relatório e Concluir Etapa</span>
                         </button>
                     </div>
                 </div>
@@ -416,6 +426,7 @@
         let prosperaAgentsList = [];
         let currentChatAgent = null;
         let chatHistory = [];
+        let prosperaProgress = {}; // Map: agent_id -> progress status
 
         async function loadApiKeys() {
             try {
@@ -440,8 +451,33 @@
             }
         }
 
+        async function loadProsperaProgress() {
+            if (!currentUser || !currentUser.email) {
+                console.warn('No user email, skipping progress load');
+                return;
+            }
+
+            try {
+                const res = await fetch(buildApiUrl(`/api/prospera/progress/${encodeURIComponent(currentUser.email)}`));
+                if (res.ok) {
+                    const progressArray = await res.json();
+                    // Convert array to map for easy lookup
+                    prosperaProgress = {};
+                    progressArray.forEach(p => {
+                        prosperaProgress[p.agent_id] = p;
+                    });
+                    console.log('✅ Progresso Prospera-IA carregado:', Object.keys(prosperaProgress).length, 'agentes');
+                } else {
+                    console.warn('⚠️ Falha ao carregar progresso Prospera:', await res.text());
+                }
+            } catch (err) {
+                console.warn('⚠️ Erro ao carregar progresso Prospera:', err);
+            }
+        }
+
         async function initProsperaAgents() {
             await loadApiKeys();
+            await loadProsperaProgress();
             let list = [];
             // 1) Tentar carregar do servidor (fonte de verdade)
             let __fetchStatus = 'pending'; let __fetchError = ''; let __path = 'relative';
@@ -539,16 +575,54 @@
                 const plans = normalizePlans(agent);
                 const planBadges = (plans || []).map(p => getPlanBadge(p)).join(' ');
                 const productTag = getProductBadge(agent.product);
-                const canAccess = canAccessAgent(agent, userLevel, isAdmin);
-                const requiredPlan = getMinPlan(plans) || 'basic';
-                const lockIcon = canAccess ? 'fa-lock-open text-emerald-400' : 'fa-lock text-red-400';
+                
+                // Check plan access first
+                const hasplanAccess = canAccessAgent(agent, userLevel, isAdmin);
+                
+                // Check sequential progress status
+                const progress = prosperaProgress[agent.id];
+                const progressStatus = progress ? progress.status : 'locked';
+                const isUnlocked = progressStatus === 'unlocked' || progressStatus === 'completed';
+                
+                // Final access check: must have plan access AND be unlocked in progress
+                const canAccess = hasplanAccess && isUnlocked;
+                
+                // Lock status and messages
+                let lockIcon, lockLabel, buttonLabel, upgradeMsg;
+                
+                if (!hasplanAccess) {
+                    // Blocked by plan
+                    const requiredPlan = getMinPlan(plans) || 'basic';
+                    lockIcon = 'fa-lock text-red-400';
+                    lockLabel = 'Plano bloqueado';
+                    buttonLabel = 'Acesso bloqueado';
+                    upgradeMsg = `<p class="mt-2 text-xs text-red-300"><i class="fas fa-triangle-exclamation mr-1"></i> Faça o upgrade para o plano ${planLabel(requiredPlan)} para ter acesso.</p>`;
+                } else if (!isUnlocked) {
+                    // Blocked by sequential progress
+                    lockIcon = 'fa-lock text-yellow-400';
+                    lockLabel = 'Bloqueado';
+                    buttonLabel = 'Complete o agente anterior';
+                    upgradeMsg = `<p class="mt-2 text-xs text-yellow-300"><i class="fas fa-hourglass-half mr-1"></i> Complete o agente anterior para desbloquear.</p>`;
+                } else if (progressStatus === 'completed') {
+                    // Completed
+                    lockIcon = 'fa-check-circle text-green-400';
+                    lockLabel = 'Completo';
+                    buttonLabel = hasKey ? 'Revisar conversa' : `Configurar API`;
+                    upgradeMsg = '';
+                } else {
+                    // Unlocked and available
+                    lockIcon = 'fa-lock-open text-emerald-400';
+                    lockLabel = 'Liberado';
+                    buttonLabel = hasKey ? 'Conversar agora' : `Configurar API (${providerName||''})`;
+                    upgradeMsg = '';
+                }
+                
                 const buttonState = canAccess && hasKey ? 'bg-gold-experience hover:bg-gold-legacy text-nexus-deep' : 'bg-gray-600 text-white cursor-not-allowed';
-                const buttonLabel = !canAccess ? 'Acesso bloqueado' : (hasKey ? 'Conversar agora' : `Configurar API (${providerName||''})`);
-                const upgradeMsg = !canAccess ? `<p class="mt-2 text-xs text-red-300"><i class="fas fa-triangle-exclamation mr-1"></i> Faça o upgrade para o plano ${planLabel(requiredPlan)} para ter acesso aos agentes.</p>` : '';
+                
                 return `
                 <div class="relative bg-nexus-power border-2 border-gold-experience/30 rounded-2xl p-6 hover:scale-[1.01] transition-transform duration-300">
                     <div class="absolute top-4 right-4">
-                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-black/40 border border-white/10 text-white"><i class="fas ${lockIcon} mr-1"></i>${canAccess ? 'Liberado' : 'Bloqueado'}</span>
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-black/40 border border-white/10 text-white"><i class="fas ${lockIcon} mr-1"></i>${lockLabel}</span>
                     </div>
                     <div class="flex items-start space-x-4">
                         <div class="w-16 h-16 bg-gold-experience/10 rounded-xl flex items-center justify-center text-2xl flex-shrink-0">
@@ -774,6 +848,71 @@
             } catch (err) {
                 removeTypingIndicator();
                 addProsperaMessage('❌ Erro ao consultar o provedor: ' + (err.message || 'Falha desconhecida'), false);
+            }
+        }
+
+        async function generateProsperaReport() {
+            if (!currentChatAgent || !currentUser || !currentUser.email) {
+                alert('❌ Erro: Agente ou usuário não identificado');
+                return;
+            }
+
+            // Check if there's enough conversation
+            if (chatHistory.length < 4) {
+                alert('⚠️ Converse mais com o agente antes de gerar o relatório. Recomenda-se pelo menos 2 trocas de mensagens.');
+                return;
+            }
+
+            const confirmMsg = `📋 Gerar Relatório do ${currentChatAgent.name}?\n\nIsso encerrará sua interação com este agente e desbloqueará o próximo agente do método Prospera-IA.\n\nDeseja continuar?`;
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            try {
+                // Generate report summary from chat history
+                const userMessages = chatHistory.filter(m => m.role === 'user').map(m => m.content);
+                const assistantMessages = chatHistory.filter(m => m.role === 'assistant').map(m => m.content);
+                
+                const reportSummary = {
+                    agent_name: currentChatAgent.name,
+                    agent_id: currentChatAgent.id,
+                    user_email: currentUser.email,
+                    total_messages: chatHistory.length,
+                    user_messages_count: userMessages.length,
+                    assistant_messages_count: assistantMessages.length,
+                    timestamp: new Date().toISOString(),
+                    summary: `Conversa com ${chatHistory.length} mensagens concluída em ${new Date().toLocaleDateString()}`
+                };
+
+                // Call API to mark as completed
+                const response = await fetch(buildApiUrl('/api/prospera/progress/complete'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_email: currentUser.email,
+                        agent_id: currentChatAgent.id,
+                        report_summary: reportSummary
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    // Success!
+                    alert(`✅ ${data.message}\n\n${currentChatAgent.name} marcado como concluído!`);
+                    
+                    // Reload progress to update locks
+                    await loadProsperaProgress();
+                    
+                    // Close chat and reload agents
+                    closeProsperaChat();
+                    renderProsperaAgents();
+                } else {
+                    alert(`❌ Erro ao gerar relatório:\n${data.error || 'Erro desconhecido'}`);
+                }
+            } catch (error) {
+                console.error('Erro ao gerar relatório:', error);
+                alert('❌ Erro de conexão ao tentar gerar relatório. Tente novamente.');
             }
         }
 
