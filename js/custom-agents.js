@@ -356,17 +356,17 @@ function updateModelOptions() {
             { value: 'o4-mini-deep-research', label: 'o4-mini-deep-research' }
         ],
         openrouter: [
-            { value: 'anthropic/claude-4-sonnet-20250522', label: 'Claude 4 Sonnet' },
-            { value: 'anthropic/claude-3.7-sonnet', label: 'Claude 3.7 Sonnet' },
-            { value: 'google/gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
-            { value: 'google/gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-            { value: 'openai/gpt-4.1', label: 'GPT-4.1' },
-            { value: 'openai/gpt-4.1-mini-2025-04-14', label: 'GPT-4.1 Mini' },
-            { value: 'openai/gpt-5-mini', label: 'GPT-5 Mini' },
-            { value: 'meta-llama/llama-4-maverick', label: 'Llama 4 Maverick (400B)' },
-            { value: 'meta-llama/llama-4-scout', label: 'Llama 4 Scout (109B)' },
-            { value: 'deepseek/deepseek-r1:free', label: 'DeepSeek R1 (free)' },
-            { value: 'google/gemini-2.0-flash-exp:free', label: 'Gemini 2.0 Flash (free)' }
+            { value: 'openrouter/quasar-alpha', label: 'Quasar Alpha' },
+            { value: 'x-ai/grok-code-fast-1', label: 'x-AI: Grok Code Fast 1' },
+            { value: 'anthropic/claude-sonnet-4', label: 'Anthropic: Claude Sonnet 4' },
+            { value: 'google/gemini-2.5-flash', label: 'Google: Gemini 2.5 Flash' },
+            { value: 'x-ai/grok-4-fast:free', label: 'x-AI: Grok 4 Fast (free)' },
+            { value: 'deepseek/deepseek-chat-v3.1:free', label: 'DeepSeek: DeepSeek V3.1 (free)' },
+            { value: 'google/gemini-2.0-flash-exp:free', label: 'Google: Gemini 2.0 Flash Experimental (free)' },
+            { value: 'deepseek/deepseek-chat-v3-0324', label: 'DeepSeek: DeepSeek V3 0324' },
+            { value: 'google/gemini-2.5-pro', label: 'Google: Gemini 2.5 Pro' },
+            { value: 'openai/gpt-4.1-mini', label: 'OpenAI: GPT-4.1 Mini' },
+            { value: 'openai/gpt-5-mini', label: 'OpenAI: GPT-5 Mini' }
         ],
         groq: [
             { value: 'llama-3.3-70b', label: 'Llama 3.3 70B' },
