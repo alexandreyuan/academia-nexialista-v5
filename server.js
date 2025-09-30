@@ -95,6 +95,34 @@ async function initDatabase() {
       console.log('✅ Usuários padrão criados com senhas seguras');
     }
 
+    // Tabela de progresso do método Prospera-IA (sequential unlock)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS prospera_agent_progress (
+        id SERIAL PRIMARY KEY,
+        user_email TEXT NOT NULL,
+        agent_id TEXT NOT NULL,
+        status TEXT NOT NULL CHECK (status IN ('locked', 'unlocked', 'completed')),
+        unlocked_at TIMESTAMP,
+        completed_at TIMESTAMP,
+        prerequisite_agent_id TEXT,
+        report_snapshot JSONB,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE(user_email, agent_id)
+      )
+    `);
+
+    // Índices para melhor performance
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_prospera_progress_user 
+      ON prospera_agent_progress(user_email)
+    `);
+    
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_prospera_progress_agent 
+      ON prospera_agent_progress(agent_id)
+    `);
+
     console.log('✅ Banco de dados inicializado com sucesso');
   } catch (error) {
     console.error('❌ Erro ao inicializar banco de dados:', error);
@@ -561,6 +589,281 @@ app.delete('/api/conversations/:user_email', async (req, res) => {
   } catch (error) {
     console.error('Erro ao deletar conversas:', error);
     res.status(500).json({ error: 'Erro ao deletar conversas' });
+  }
+});
+
+// ========== PROSPERA-IA PROGRESS API ==========
+
+// Helper function to initialize progress for a user
+async function initializeProgresoProgress(userEmail, prosperaAgentIds) {
+  try {
+    // Check if user already has progress
+    const existing = await pool.query(
+      'SELECT COUNT(*) FROM prospera_agent_progress WHERE user_email = $1',
+      [userEmail]
+    );
+
+    if (parseInt(existing.rows[0].count) > 0) {
+      return { alreadyInitialized: true };
+    }
+
+    // Get all prospera-ia agents
+    const agentsResult = await pool.query(
+      `SELECT id, name FROM custom_agents 
+       WHERE product = 'prospera-ia' AND is_active = true`
+    );
+
+    if (agentsResult.rows.length === 0) {
+      return { error: 'No Prospera-IA agents found' };
+    }
+
+    // Helper function to normalize text (remove accents, lowercase, trim)
+    const normalize = (text) => {
+      return text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .trim();
+    };
+
+    // Sort agents in the correct Prospera-IA method sequence: Oráculo → Alquimista → Nexus → Arquiteto
+    const correctOrder = ['oraculo', 'alquimista', 'nexus', 'arquiteto'];
+    const agents = agentsResult.rows.sort((a, b) => {
+      const aName = normalize(a.name);
+      const bName = normalize(b.name);
+      
+      // Find position in correct order based on keywords
+      let posA = correctOrder.findIndex(keyword => aName.includes(keyword));
+      let posB = correctOrder.findIndex(keyword => bName.includes(keyword));
+      
+      // If not found in correct order, place at end
+      if (posA === -1) posA = 999;
+      if (posB === -1) posB = 999;
+      
+      return posA - posB;
+    });
+
+    // Validate that each of the 4 required agents is present exactly once
+    const keywordMap = {
+      'oraculo': null,
+      'alquimista': null,
+      'nexus': null,
+      'arquiteto': null
+    };
+
+    const duplicates = [];
+
+    agents.forEach(agent => {
+      const normalized = normalize(agent.name);
+      for (const keyword of correctOrder) {
+        if (normalized.includes(keyword)) {
+          if (keywordMap[keyword]) {
+            // Duplicate found
+            duplicates.push({ keyword, agent: agent.name, existing: keywordMap[keyword].name });
+          } else {
+            keywordMap[keyword] = agent;
+          }
+          break; // Only match each agent to one keyword
+        }
+      }
+    });
+
+    // Check for duplicates
+    if (duplicates.length > 0) {
+      return {
+        error: 'Duplicate Prospera-IA agents found',
+        details: `Each agent must be unique. Duplicates: ${duplicates.map(d => `${d.keyword} (${d.agent} conflicts with ${d.existing})`).join(', ')}`
+      };
+    }
+
+    // Check if all required agents were found
+    const missing = Object.keys(keywordMap).filter(k => !keywordMap[k]);
+    if (missing.length > 0) {
+      const foundNames = Object.values(keywordMap)
+        .filter(a => a)
+        .map(a => a.name)
+        .join(', ');
+      return { 
+        error: 'Missing required Prospera-IA agents', 
+        details: `Missing keywords: ${missing.join(', ')}. Found: ${foundNames || 'none'}`
+      };
+    }
+
+    // Build the correct sequence using ONLY the validated agents
+    const orderedAgents = correctOrder.map(keyword => keywordMap[keyword]);
+
+    // Initialize progress: first agent unlocked, others locked
+    for (let i = 0; i < orderedAgents.length; i++) {
+      const agent = orderedAgents[i];
+      const isFirst = i === 0;
+      const status = isFirst ? 'unlocked' : 'locked';
+      const prerequisite = i > 0 ? orderedAgents[i - 1].id : null;
+
+      await pool.query(
+        `INSERT INTO prospera_agent_progress 
+         (user_email, agent_id, status, prerequisite_agent_id, unlocked_at) 
+         VALUES ($1, $2, $3, $4, $5)
+         ON CONFLICT (user_email, agent_id) DO NOTHING`,
+        [userEmail, agent.id, status, prerequisite, isFirst ? new Date() : null]
+      );
+    }
+
+    return { initialized: true, agentCount: agents.length };
+  } catch (error) {
+    console.error('Error initializing prospera progress:', error);
+    throw error;
+  }
+}
+
+// GET /api/prospera/progress/:email - Get user's Prospera-IA progress
+app.get('/api/prospera/progress/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ error: 'Formato de email inválido' });
+    }
+
+    // Check if progress exists, if not initialize it
+    const checkProgress = await pool.query(
+      'SELECT COUNT(*) FROM prospera_agent_progress WHERE user_email = $1',
+      [email]
+    );
+
+    if (parseInt(checkProgress.rows[0].count) === 0) {
+      // Initialize progress for this user
+      const initResult = await initializeProgresoProgress(email);
+      if (initResult.error) {
+        return res.status(500).json({ error: initResult.error, details: 'Failed to initialize Prospera progress' });
+      }
+    }
+
+    // Get progress with agent details
+    const result = await pool.query(
+      `SELECT 
+        pap.*,
+        ca.name as agent_name,
+        ca.avatar as agent_avatar,
+        ca.description as agent_description,
+        ca.product as agent_product,
+        ca.category as agent_category
+       FROM prospera_agent_progress pap
+       LEFT JOIN custom_agents ca ON pap.agent_id = ca.id
+       WHERE pap.user_email = $1
+       ORDER BY pap.created_at ASC`,
+      [email]
+    );
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Erro ao buscar progresso Prospera:', error);
+    res.status(500).json({ error: 'Erro ao buscar progresso' });
+  }
+});
+
+// POST /api/prospera/progress/complete - Mark agent as completed and unlock next
+app.post('/api/prospera/progress/complete', async (req, res) => {
+  try {
+    const { user_email, agent_id, report_summary } = req.body;
+
+    if (!user_email || !agent_id) {
+      return res.status(400).json({ error: 'user_email e agent_id são obrigatórios' });
+    }
+
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user_email)) {
+      return res.status(400).json({ error: 'Formato de email inválido' });
+    }
+
+    // Start transaction
+    const client = await pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      // Mark current agent as completed
+      const updateResult = await client.query(
+        `UPDATE prospera_agent_progress 
+         SET status = 'completed', 
+             completed_at = CURRENT_TIMESTAMP,
+             report_snapshot = $1,
+             updated_at = CURRENT_TIMESTAMP
+         WHERE user_email = $2 AND agent_id = $3
+         RETURNING *`,
+        [report_summary ? JSON.stringify({ summary: report_summary, timestamp: new Date() }) : null, user_email, agent_id]
+      );
+
+      if (updateResult.rows.length === 0) {
+        await client.query('ROLLBACK');
+        return res.status(404).json({ error: 'Progress record not found' });
+      }
+
+      // Find and unlock next agent
+      const nextAgent = await client.query(
+        `SELECT * FROM prospera_agent_progress 
+         WHERE user_email = $1 AND prerequisite_agent_id = $2 AND status = 'locked'
+         LIMIT 1`,
+        [user_email, agent_id]
+      );
+
+      let unlockedNext = null;
+      if (nextAgent.rows.length > 0) {
+        const unlockResult = await client.query(
+          `UPDATE prospera_agent_progress 
+           SET status = 'unlocked', 
+               unlocked_at = CURRENT_TIMESTAMP,
+               updated_at = CURRENT_TIMESTAMP
+           WHERE id = $1
+           RETURNING *`,
+          [nextAgent.rows[0].id]
+        );
+        unlockedNext = unlockResult.rows[0];
+      }
+
+      await client.query('COMMIT');
+
+      res.json({
+        success: true,
+        completed: updateResult.rows[0],
+        unlockedNext: unlockedNext,
+        message: unlockedNext 
+          ? `Agente completado! Próximo agente desbloqueado.` 
+          : `Agente completado! Você finalizou o método Prospera-IA.`
+      });
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  } catch (error) {
+    console.error('Erro ao completar agente:', error);
+    res.status(500).json({ error: 'Erro ao completar agente' });
+  }
+});
+
+// POST /api/prospera/progress/init - Manually initialize progress (admin/debug)
+app.post('/api/prospera/progress/init', async (req, res) => {
+  try {
+    const { user_email } = req.body;
+
+    if (!user_email) {
+      return res.status(400).json({ error: 'user_email é obrigatório' });
+    }
+
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user_email)) {
+      return res.status(400).json({ error: 'Formato de email inválido' });
+    }
+
+    const result = await initializeProgresoProgress(user_email);
+    res.json(result);
+  } catch (error) {
+    console.error('Erro ao inicializar progresso:', error);
+    res.status(500).json({ error: 'Erro ao inicializar progresso' });
   }
 });
 
