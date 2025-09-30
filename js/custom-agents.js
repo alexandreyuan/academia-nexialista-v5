@@ -129,44 +129,76 @@ async function deleteAgent(id) {
 }
 
 async function saveAgent() {
-    const agentData = {
-        name: document.getElementById('agent-name').value,
-        description: document.getElementById('agent-description').value,
-        system_prompt: document.getElementById('agent-system-prompt').value,
-        model: document.getElementById('agent-model').value,
-        provider: document.getElementById('agent-provider')?.value || 'openai'
-    };
+    const name = document.getElementById('agent-name').value;
+    const description = document.getElementById('agent-description').value;
+    const system_prompt = document.getElementById('agent-system-prompt').value;
+    const model = document.getElementById('agent-model').value;
+    const provider = document.getElementById('agent-provider')?.value || 'openai';
     
-    if (!agentData.name) {
+    if (!name) {
         showToast('Nome é obrigatório', 'error');
         return;
     }
     
+    // Generate ID from name if creating new agent
+    const agentData = {
+        name,
+        description,
+        system_prompt,
+        model,
+        provider,
+        avatar: '🤖',
+        temperature: 0.7,
+        max_tokens: 2000,
+        knowledge: '',
+        product: 'academia-nexialista',
+        accessible_plans: ['basic', 'premium', 'vip', 'admin'],
+        category: 'custom'
+    };
+    
+    // Add ID for new agents
+    if (!editingAgentId) {
+        agentData.id = name.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') + '-' + Date.now();
+    }
+    
+    console.log('Salvando agente:', editingAgentId ? 'EDIÇÃO' : 'NOVO', agentData);
+    
     try {
         let response;
+        const url = editingAgentId 
+            ? buildApiUrl(`tables/custom_agents/${editingAgentId}`)
+            : buildApiUrl('tables/custom_agents');
+        
+        console.log('URL:', url, 'Method:', editingAgentId ? 'PATCH' : 'POST');
+        
         if (editingAgentId) {
-            response = await fetch(buildApiUrl(`tables/custom_agents/${editingAgentId}`), {
+            response = await fetch(url, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(agentData)
             });
         } else {
-            response = await fetch(buildApiUrl('tables/custom_agents'), {
+            response = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(agentData)
             });
         }
         
+        const data = await response.json();
+        console.log('Resposta:', response.status, data);
+        
         if (response.ok) {
-            showToast(editingAgentId ? 'Agente atualizado!' : 'Agente criado!', 'success');
+            showToast(editingAgentId ? 'Agente atualizado!' : 'Agente criado com sucesso!', 'success');
             closeAgentModal();
             await loadAgents();
         } else {
-            showToast('Erro ao salvar agente', 'error');
+            showToast(`Erro: ${data.error || 'Erro ao salvar agente'}`, 'error');
         }
     } catch (error) {
-        console.error('Erro:', error);
+        console.error('Erro ao salvar agente:', error);
         showToast('Erro ao conectar com servidor', 'error');
     }
 }
