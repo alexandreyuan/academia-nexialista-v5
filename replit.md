@@ -48,4 +48,5 @@ Plataforma web full stack de agentes de IA com pensamento nexialista. Sistema co
 - ✅ Frontend importado
 - ✅ Editor de agentes funcionando (temperatura, produto, planos)
 - ✅ Chaves de API carregadas do banco de dados
+- ✅ Botão admin para configuração de agentes (founder/admin)
 - 🔄 Em testes

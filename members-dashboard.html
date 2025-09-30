@@ -224,6 +224,32 @@
             </div>
         </div>
 
+        <!-- Admin/Founder Section (Hidden by default) -->
+        <div id="admin-section" class="mb-10 hidden">
+            <div class="bg-gradient-to-r from-red-900/30 to-purple-900/30 border border-red-500/30 rounded-2xl p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 bg-red-500/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-cog text-2xl text-red-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-playfair font-bold text-red-400 mb-1">
+                                Configuração de Agentes IA
+                            </h3>
+                            <p class="text-digital-clarity/70 text-sm">
+                                Crie, edite e gerencie agentes customizados do ecossistema Nexialista
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="navigateToAgentConfig()" 
+                            class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors flex items-center space-x-2">
+                        <i class="fas fa-tools"></i>
+                        <span>Gerenciar Agentes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Stats -->
         <div class="bg-nexus-power/50 backdrop-blur-sm border border-gold-experience/20 rounded-2xl p-6">
             <h2 class="text-lg font-playfair font-bold text-gold-experience mb-4">
@@ -285,6 +311,14 @@
             document.getElementById('user-email').textContent = user.email;
             document.getElementById('user-plan').textContent = getPlanDisplayName(user.subscription, user.role);
             
+            // Show admin section for founder and admin
+            if (user.role === 'founder' || user.role === 'admin') {
+                const adminSection = document.getElementById('admin-section');
+                if (adminSection) {
+                    adminSection.classList.remove('hidden');
+                }
+            }
+            
             // Load user stats
             loadUserStats(user.email);
         }
@@ -333,6 +367,10 @@
 
         function navigateToProsperaIA() {
             window.location.href = 'prospera-ia.html';
+        }
+
+        function navigateToAgentConfig() {
+            window.location.href = 'custom-agents.html';
         }
 
         // Logout function
