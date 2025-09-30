@@ -521,7 +521,19 @@
                 upgradeBanner.innerHTML = '';
             }
 
-            grid.innerHTML = list.map(agent => {
+            // Sort agents by workflow order: Oráculo → Alquimista → Nexus → Arquiteto
+            const flowOrder = ['oráculo', 'alquimista', 'nexus', 'arquiteto'];
+            const sortedList = [...list].sort((a, b) => {
+                const nameA = (a.name || '').toLowerCase().replace(/^\d+\s*-\s*/, '').trim();
+                const nameB = (b.name || '').toLowerCase().replace(/^\d+\s*-\s*/, '').trim();
+                let posA = flowOrder.findIndex(flow => nameA.includes(flow));
+                let posB = flowOrder.findIndex(flow => nameB.includes(flow));
+                if (posA === -1) posA = 999;
+                if (posB === -1) posB = 999;
+                return posA - posB;
+            });
+
+            grid.innerHTML = sortedList.map(agent => {
                 const providerName = AI_PROVIDERS[agent.provider]?.name || agent.provider;
                 const hasKey = !!apiKeys[agent.provider];
                 const plans = normalizePlans(agent);

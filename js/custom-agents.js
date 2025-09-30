@@ -31,6 +31,28 @@ async function loadAgents() {
     }
 }
 
+// Sort agents by workflow order
+function sortAgentsByFlow(agentsList) {
+    const flowOrder = ['oráculo', 'alquimista', 'nexus', 'arquiteto'];
+    
+    return agentsList.sort((a, b) => {
+        // Extract agent names (remove numbers and normalize)
+        const nameA = (a.name || '').toLowerCase().replace(/^\d+\s*-\s*/, '').trim();
+        const nameB = (b.name || '').toLowerCase().replace(/^\d+\s*-\s*/, '').trim();
+        
+        // Find position in flow order
+        let posA = flowOrder.findIndex(flow => nameA.includes(flow));
+        let posB = flowOrder.findIndex(flow => nameB.includes(flow));
+        
+        // If not found in flow order, put at the end
+        if (posA === -1) posA = 999;
+        if (posB === -1) posB = 999;
+        
+        // Sort by position in flow order
+        return posA - posB;
+    });
+}
+
 function renderAgents() {
     const grid = document.getElementById('agents-grid');
     const emptyState = document.getElementById('empty-state');
@@ -43,7 +65,10 @@ function renderAgents() {
     
     if (emptyState) emptyState.classList.add('hidden');
     
-    grid.innerHTML = agents.map(agent => {
+    // Sort agents by workflow order before rendering
+    const sortedAgents = sortAgentsByFlow([...agents]);
+    
+    grid.innerHTML = sortedAgents.map(agent => {
         // Product tag
         const productTag = getProductTag(agent.product);
         
