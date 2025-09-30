@@ -177,9 +177,46 @@ function closeAgentModal() {
     editingAgentId = null;
 }
 
-function showApiSettings() {
+async function showApiSettings() {
     const modalEl = document.getElementById('api-modal');
     if (modalEl) modalEl.classList.remove('hidden');
+    
+    // Load saved API keys
+    await loadApiKeys();
+}
+
+async function loadApiKeys() {
+    try {
+        const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'));
+        
+        if (response.ok) {
+            const keys = await response.json();
+            
+            // Clear all fields first
+            document.getElementById('openai-key').value = '';
+            document.getElementById('groq-key').value = '';
+            document.getElementById('google-key').value = '';
+            document.getElementById('openrouter-key').value = '';
+            
+            // Populate fields with saved keys
+            keys.forEach(keyData => {
+                const provider = keyData.provider;
+                const apiKey = keyData.api_key;
+                
+                if (provider === 'openai') {
+                    document.getElementById('openai-key').value = apiKey;
+                } else if (provider === 'groq') {
+                    document.getElementById('groq-key').value = apiKey;
+                } else if (provider === 'google') {
+                    document.getElementById('google-key').value = apiKey;
+                } else if (provider === 'openrouter') {
+                    document.getElementById('openrouter-key').value = apiKey;
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao carregar API keys:', error);
+    }
 }
 
 function closeApiModal() {
@@ -188,28 +225,44 @@ function closeApiModal() {
 }
 
 async function saveApiSettings() {
-    const apiKey = document.getElementById('openai-key').value;
+    const apiKeys = [
+        { provider: 'openai', key: document.getElementById('openai-key').value },
+        { provider: 'groq', key: document.getElementById('groq-key').value },
+        { provider: 'google', key: document.getElementById('google-key').value },
+        { provider: 'openrouter', key: document.getElementById('openrouter-key').value }
+    ];
     
-    if (!apiKey) {
-        showToast('API Key é obrigatória', 'error');
+    // Filter out empty keys
+    const keysToSave = apiKeys.filter(item => item.key && item.key.trim() !== '');
+    
+    if (keysToSave.length === 0) {
+        showToast('Adicione pelo menos uma API Key', 'error');
         return;
     }
     
     try {
-        const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'), {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ 
-                provider: 'openai',
-                api_key: apiKey 
-            })
-        });
+        let savedCount = 0;
         
-        if (response.ok) {
-            showToast('API Key salva com sucesso!', 'success');
+        for (const item of keysToSave) {
+            const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'), {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    provider: item.provider,
+                    api_key: item.key 
+                })
+            });
+            
+            if (response.ok) {
+                savedCount++;
+            }
+        }
+        
+        if (savedCount > 0) {
+            showToast(`${savedCount} API Key(s) salva(s) com sucesso!`, 'success');
             closeApiModal();
         } else {
-            showToast('Erro ao salvar API Key', 'error');
+            showToast('Erro ao salvar API Keys', 'error');
         }
     } catch (error) {
         console.error('Erro:', error);
