@@ -627,7 +627,7 @@
         }
 
         // ========= Chat com agentes reais =========
-        function openProsperaChatCustom(agentId) {
+        async function openProsperaChatCustom(agentId) {
             const isAdmin = (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function' && window.NexialistaAuth.isAdmin()) || false;
             const userLevel = (currentUser && currentUser.subscription) || 'basic';
             const agent = (prosperaAgentsList || []).find(a => a.id === agentId);
@@ -647,6 +647,26 @@
             // Reset chat
             const chatMessages = document.getElementById('chat-messages');
             if (chatMessages) chatMessages.innerHTML = '';
+
+            // Carregar histórico do agente do banco de dados (memória persistente)
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                try {
+                    const history = await window.ProsperaMemory.loadAgentConversation(currentUser.email, agentId, 10);
+                    if (history && history.length > 0) {
+                        // Mostrar histórico no chat
+                        history.forEach(msg => {
+                            addProsperaMessage(msg.message_content, msg.message_type === 'user');
+                            // Adicionar ao chatHistory para contexto da API
+                            chatHistory.push({
+                                role: msg.message_type === 'user' ? 'user' : 'assistant',
+                                content: msg.message_content
+                            });
+                        });
+                    }
+                } catch (err) {
+                    console.warn('Erro ao carregar histórico do agente:', err);
+                }
+            }
 
             document.getElementById('prospera-chat-modal').classList.remove('hidden');
             const inputEl = document.getElementById('prospera-chat-input');
@@ -712,20 +732,44 @@
             if (!message || !currentChatAgent) return;
 
             addProsperaMessage(message, true);
-            try { if (window.__prosperaMemory) window.__prosperaMemory.addMessage(currentChatAgent.id, 'user', message); } catch {}
             input.value = '';
+
+            // Salvar mensagem do usuário no banco de dados (memória persistente)
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                await window.ProsperaMemory.saveInteraction(
+                    currentUser.email,
+                    currentChatAgent.id,
+                    currentChatAgent.name,
+                    'user',
+                    message,
+                    'prospera-ia'
+                );
+            }
 
             showTypingIndicator('Pensando...');
             try {
                 const response = await callAgentAPI(currentChatAgent, message);
                 removeTypingIndicator();
                 addProsperaMessage(response, false);
-                try { if (window.__prosperaMemory) window.__prosperaMemory.addMessage(currentChatAgent.id, 'assistant', response); } catch {}
-                // histórico local
+                
+                // Salvar resposta do agente no banco de dados (memória persistente)
+                if (currentUser && currentUser.email && window.ProsperaMemory) {
+                    await window.ProsperaMemory.saveInteraction(
+                        currentUser.email,
+                        currentChatAgent.id,
+                        currentChatAgent.name,
+                        'assistant',
+                        response,
+                        'prospera-ia'
+                    );
+                }
+
+                // histórico local para contexto imediato
                 chatHistory.push(
                     { role: 'user', content: message },
                     { role: 'assistant', content: response }
                 );
+                
                 // atualizar status de memória
                 setTimeout(updateDynamicMemoryStatus, 50);
             } catch (err) {
@@ -824,7 +868,27 @@
             // FIX: Campo do banco é system_prompt (underscore), não systemPrompt
             let systemPrompt = agent.system_prompt || agent.systemPrompt || '';
             if (agent.knowledge) systemPrompt += `\n\nBase de Conhecimento:\n${agent.knowledge}`;
-            // Injetar contexto cruzado (resumido) do ecossistema de agentes e perfil do usuário
+            
+            // Carregar contexto compartilhado do banco de dados (memória de todos os agentes)
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                try {
+                    const sharedContext = await window.ProsperaMemory.loadSharedContext(
+                        currentUser.email, 
+                        'prospera-ia', 
+                        15
+                    );
+                    if (sharedContext && sharedContext.length > 0) {
+                        const contextPrompt = window.ProsperaMemory.buildContextPrompt(sharedContext, 10);
+                        if (contextPrompt) {
+                            systemPrompt += contextPrompt;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Erro ao carregar contexto compartilhado:', e);
+                }
+            }
+            
+            // Injetar contexto cruzado (resumido) do ecossistema de agentes e perfil do usuário (sistema antigo - manter para compatibilidade)
             try {
                 const crossCtx = buildNexialistContext(agent.id);
                 if (crossCtx) {
