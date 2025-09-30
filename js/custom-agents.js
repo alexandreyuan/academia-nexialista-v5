@@ -65,13 +65,23 @@ function renderAgents() {
 
 function createNewAgent() {
     editingAgentId = null;
-    document.getElementById('agent-form-title').textContent = 'Criar Novo Agente';
-    document.getElementById('agent-name').value = '';
-    document.getElementById('agent-role').value = '';
-    document.getElementById('agent-description').value = '';
-    document.getElementById('agent-personality').value = '';
-    document.getElementById('agent-model').value = 'gpt-4';
-    document.getElementById('agent-modal').classList.remove('hidden');
+    const titleEl = document.getElementById('modal-title');
+    if (titleEl) titleEl.textContent = 'Criar Novo Agente';
+    
+    const nameEl = document.getElementById('agent-name');
+    if (nameEl) nameEl.value = '';
+    
+    const descEl = document.getElementById('agent-description');
+    if (descEl) descEl.value = '';
+    
+    const promptEl = document.getElementById('agent-system-prompt');
+    if (promptEl) promptEl.value = '';
+    
+    const modelEl = document.getElementById('agent-model');
+    if (modelEl) modelEl.value = 'gpt-4';
+    
+    const modalEl = document.getElementById('agent-modal');
+    if (modalEl) modalEl.classList.remove('hidden');
 }
 
 function editAgent(id) {
@@ -79,13 +89,23 @@ function editAgent(id) {
     if (!agent) return;
     
     editingAgentId = id;
-    document.getElementById('agent-form-title').textContent = 'Editar Agente';
-    document.getElementById('agent-name').value = agent.name || '';
-    document.getElementById('agent-role').value = agent.role || '';
-    document.getElementById('agent-description').value = agent.description || '';
-    document.getElementById('agent-personality').value = agent.personality || '';
-    document.getElementById('agent-model').value = agent.model || 'gpt-4';
-    document.getElementById('agent-modal').classList.remove('hidden');
+    const titleEl = document.getElementById('modal-title');
+    if (titleEl) titleEl.textContent = 'Editar Agente';
+    
+    const nameEl = document.getElementById('agent-name');
+    if (nameEl) nameEl.value = agent.name || '';
+    
+    const descEl = document.getElementById('agent-description');
+    if (descEl) descEl.value = agent.description || '';
+    
+    const promptEl = document.getElementById('agent-system-prompt');
+    if (promptEl) promptEl.value = agent.system_prompt || '';
+    
+    const modelEl = document.getElementById('agent-model');
+    if (modelEl) modelEl.value = agent.model || 'gpt-4';
+    
+    const modalEl = document.getElementById('agent-modal');
+    if (modalEl) modalEl.classList.remove('hidden');
 }
 
 async function deleteAgent(id) {
@@ -111,14 +131,14 @@ async function deleteAgent(id) {
 async function saveAgent() {
     const agentData = {
         name: document.getElementById('agent-name').value,
-        role: document.getElementById('agent-role').value,
         description: document.getElementById('agent-description').value,
-        personality: document.getElementById('agent-personality').value,
-        model: document.getElementById('agent-model').value
+        system_prompt: document.getElementById('agent-system-prompt').value,
+        model: document.getElementById('agent-model').value,
+        provider: document.getElementById('agent-provider')?.value || 'openai'
     };
     
-    if (!agentData.name || !agentData.role) {
-        showToast('Nome e papel são obrigatórios', 'error');
+    if (!agentData.name) {
+        showToast('Nome é obrigatório', 'error');
         return;
     }
     
@@ -152,20 +172,23 @@ async function saveAgent() {
 }
 
 function closeAgentModal() {
-    document.getElementById('agent-modal').classList.add('hidden');
+    const modalEl = document.getElementById('agent-modal');
+    if (modalEl) modalEl.classList.add('hidden');
     editingAgentId = null;
 }
 
 function showApiSettings() {
-    document.getElementById('api-settings-modal').classList.remove('hidden');
+    const modalEl = document.getElementById('api-modal');
+    if (modalEl) modalEl.classList.remove('hidden');
 }
 
-function closeApiSettings() {
-    document.getElementById('api-settings-modal').classList.add('hidden');
+function closeApiModal() {
+    const modalEl = document.getElementById('api-modal');
+    if (modalEl) modalEl.classList.add('hidden');
 }
 
 async function saveApiSettings() {
-    const apiKey = document.getElementById('openai-api-key').value;
+    const apiKey = document.getElementById('openai-key').value;
     
     if (!apiKey) {
         showToast('API Key é obrigatória', 'error');
@@ -184,7 +207,7 @@ async function saveApiSettings() {
         
         if (response.ok) {
             showToast('API Key salva com sucesso!', 'success');
-            closeApiSettings();
+            closeApiModal();
         } else {
             showToast('Erro ao salvar API Key', 'error');
         }
