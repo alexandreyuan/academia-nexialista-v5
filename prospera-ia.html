@@ -571,12 +571,12 @@
 
         function getPlanBadge(level) {
             const map = {
-                basic: { c:'blue', icon:'🔰', label:'Básico' },
-                premium: { c:'purple', icon:'💎', label:'Premium' },
-                vip: { c:'yellow', icon:'🌟', label:'VIP' }
+                basic: { classes:'bg-blue-600/20 text-blue-400 border-blue-500/30', icon:'🔰', label:'Básico' },
+                premium: { classes:'bg-purple-600/20 text-purple-400 border-purple-500/30', icon:'💎', label:'Premium' },
+                vip: { classes:'bg-yellow-600/20 text-yellow-400 border-yellow-500/30', icon:'🌟', label:'VIP' }
             };
-            const x = map[level] || { c:'gray', icon:'❓', label: level };
-            return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-${x.c}-600/20 text-${x.c}-400 border border-${x.c}-500/30">${x.icon} ${x.label}</span>`;
+            const x = map[level] || { classes:'bg-gray-600/20 text-gray-400 border-gray-500/30', icon:'❓', label: level };
+            return `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs ${x.classes} border">${x.icon} ${x.label}</span>`;
         }
 
         function getProductBadge(product) {
@@ -591,9 +591,12 @@
         }
 
         function normalizePlans(agent) {
-            const plans = Array.isArray(agent.accessiblePlans) && agent.accessiblePlans.length > 0
-                ? agent.accessiblePlans
-                : (agent.subscriptionLevel ? [agent.subscriptionLevel] : []);
+            // Suporta tanto camelCase quanto snake_case
+            const plans = Array.isArray(agent.accessible_plans) && agent.accessible_plans.length > 0
+                ? agent.accessible_plans
+                : (Array.isArray(agent.accessiblePlans) && agent.accessiblePlans.length > 0
+                    ? agent.accessiblePlans
+                    : (agent.subscriptionLevel ? [agent.subscriptionLevel] : []));
             // normalizar e remover duplicatas
             return Array.from(new Set((plans || []).map(p => (p||'').toLowerCase())));
         }

@@ -353,7 +353,12 @@
 
         // Helpers de planos (academia)
         function normalizePlans(agent){
-            const plans = Array.isArray(agent.accessiblePlans) && agent.accessiblePlans.length>0 ? agent.accessiblePlans : (agent.subscriptionLevel ? [agent.subscriptionLevel] : []);
+            // Suporta tanto camelCase quanto snake_case
+            const plans = Array.isArray(agent.accessible_plans) && agent.accessible_plans.length>0 
+                ? agent.accessible_plans 
+                : (Array.isArray(agent.accessiblePlans) && agent.accessiblePlans.length>0 
+                    ? agent.accessiblePlans 
+                    : (agent.subscriptionLevel ? [agent.subscriptionLevel] : []));
             return Array.from(new Set((plans||[]).map(p => (p||'').toLowerCase())));
         }
         function planRank(level){ return level==='vip'?3 : level==='premium'?2 : level==='basic'?1 : 0; }
