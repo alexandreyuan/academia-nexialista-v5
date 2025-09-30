@@ -440,6 +440,17 @@ app.post('/api/conversations', async (req, res) => {
       return res.status(400).json({ error: 'message_type deve ser "user" ou "assistant"' });
     }
 
+    // Validação básica de email
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(user_email)) {
+      return res.status(400).json({ error: 'Formato de email inválido' });
+    }
+
+    // Limitar tamanho da mensagem
+    if (message_content.length > 50000) {
+      return res.status(400).json({ error: 'Mensagem muito longa (max 50000 caracteres)' });
+    }
+
     const result = await pool.query(
       `INSERT INTO agent_conversations 
        (user_email, agent_id, agent_name, message_type, message_content, product, metadata)
