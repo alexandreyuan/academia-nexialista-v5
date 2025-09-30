@@ -453,12 +453,14 @@
 
         async function loadProsperaProgress() {
             if (!currentUser || !currentUser.email) {
-                console.warn('No user email, skipping progress load');
+                console.warn('⚠️ No user email, skipping progress load. currentUser:', currentUser);
                 return;
             }
 
             try {
-                const res = await fetch(buildApiUrl(`/api/prospera/progress/${encodeURIComponent(currentUser.email)}`));
+                const url = buildApiUrl(`/api/prospera/progress/${encodeURIComponent(currentUser.email)}`);
+                console.log('🔄 Carregando progresso Prospera de:', url);
+                const res = await fetch(url);
                 if (res.ok) {
                     const progressArray = await res.json();
                     // Convert array to map for easy lookup
@@ -466,9 +468,10 @@
                     progressArray.forEach(p => {
                         prosperaProgress[p.agent_id] = p;
                     });
-                    console.log('✅ Progresso Prospera-IA carregado:', Object.keys(prosperaProgress).length, 'agentes');
+                    console.log('✅ Progresso Prospera-IA carregado:', Object.keys(prosperaProgress).length, 'agentes', prosperaProgress);
                 } else {
-                    console.warn('⚠️ Falha ao carregar progresso Prospera:', await res.text());
+                    const errorText = await res.text();
+                    console.warn('⚠️ Falha ao carregar progresso Prospera:', res.status, errorText);
                 }
             } catch (err) {
                 console.warn('⚠️ Erro ao carregar progresso Prospera:', err);
@@ -518,6 +521,7 @@
             const userLevel = (currentUser && currentUser.subscription) || 'basic';
 
             const list = prosperaAgentsList || [];
+            console.log('🎨 Renderizando agentes Prospera. Total:', list.length, '| Progresso carregado:', Object.keys(prosperaProgress).length, '| User:', currentUser?.email);
             if (debug) {
                 const debugBar = document.getElementById('prospera-upgrade-banner');
                 if (debugBar) {
@@ -569,7 +573,7 @@
                 return posA - posB;
             });
 
-            grid.innerHTML = sortedList.map(agent => {
+            grid.innerHTML = sortedList.map((agent, index) => {
                 const providerName = AI_PROVIDERS[agent.provider]?.name || agent.provider;
                 const hasKey = !!apiKeys[agent.provider];
                 const plans = normalizePlans(agent);
@@ -581,7 +585,17 @@
                 
                 // Check sequential progress status
                 const progress = prosperaProgress[agent.id];
-                const progressStatus = progress ? progress.status : 'locked';
+                const hasProgress = Object.keys(prosperaProgress).length > 0;
+                
+                // If no progress loaded yet, unlock first agent (Oráculo) by default
+                let progressStatus;
+                if (hasProgress) {
+                    progressStatus = progress ? progress.status : 'locked';
+                } else {
+                    // No progress data - first agent should be unlocked
+                    progressStatus = index === 0 ? 'unlocked' : 'locked';
+                }
+                
                 const isUnlocked = progressStatus === 'unlocked' || progressStatus === 'completed';
                 
                 // Final access check: must have plan access AND be unlocked in progress
