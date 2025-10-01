@@ -58,6 +58,10 @@
                     <a href="#movimento" class="text-digital-clarity hover:text-gold-experience transition-colors">Movimento</a>
                     <a href="#metodo" class="text-digital-clarity hover:text-gold-experience transition-colors">PROSPERA-IA</a>
                     <a href="#precos" class="text-digital-clarity hover:text-gold-experience transition-colors">Preços</a>
+                    <a href="#" id="nav-agentes-link" class="text-digital-clarity hover:text-gold-experience transition-colors flex items-center space-x-1">
+                        <i class="fas fa-robot text-sm"></i>
+                        <span>Agentes IA</span>
+                    </a>
                     <a href="#yuan" class="text-digital-clarity hover:text-gold-experience transition-colors">Yuan</a>
                     <a href="#newsletter" class="text-digital-clarity hover:text-gold-experience transition-colors">Cadastre-se</a>
                     <a href="members.html" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-3 lg:px-4 py-2 rounded-lg font-semibold transition-colors text-xs lg:text-sm flex items-center space-x-1">
@@ -78,6 +82,9 @@
                 <a href="#movimento" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Movimento</a>
                 <a href="#metodo" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">PROSPERA-IA</a>
                 <a href="#precos" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Preços</a>
+                <a href="#" id="mobile-agentes-link" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">
+                    <i class="fas fa-robot mr-2"></i>Agentes IA
+                </a>
                 <a href="#yuan" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Yuan</a>
                 <a href="#newsletter" class="block px-3 py-2 text-digital-clarity hover:text-gold-experience">Cadastre-se</a>
                 <div class="px-3 py-2">
@@ -89,6 +96,38 @@
             </div>
         </div>
     </nav>
+<script>
+  // Menu inteligente: direciona Agentes IA para o editor se admin; para login admin caso contrário
+  (function(){
+    function isAdmin(){
+      try {
+        if (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function') {
+          return window.NexialistaAuth.isAdmin();
+        }
+        // fallback: sessão admin local
+        const s = localStorage.getItem('nexialista_admin_session');
+        if (!s) return false;
+        const session = JSON.parse(s);
+        return session && session.expires && session.expires > Date.now();
+      } catch(e){ return false; }
+    }
+
+    function smartNavigate(evt){
+      evt.preventDefault();
+      const target = isAdmin() ? 'custom-agents.html' : 'admin-auth.html';
+      window.location.href = target;
+    }
+
+    document.addEventListener('DOMContentLoaded', function(){
+      // Desktop link
+      const desktop = document.getElementById('nav-agentes-link');
+      if (desktop) desktop.addEventListener('click', smartNavigate);
+      // Mobile link
+      const mobile = document.getElementById('mobile-agentes-link');
+      if (mobile) mobile.addEventListener('click', smartNavigate);
+    });
+  })();
+</script>
     
     <!-- Hero Section -->
     <section class="pt-16 pb-12 sm:pt-20 sm:pb-16 bg-gradient-to-br from-nexus-deep via-nexus-power to-nexus-deep">
@@ -938,7 +977,7 @@
                         
                         <!-- Professional Badge - Above Photo -->
                         <div class="mb-6 text-center">
-                            <div class="inline-block px-6 py-3 rounded-2xl text-base font-bold shadow-xl founder-badge bg-gold-experience text-nexus-deep">
+                            <div class="inline-block px-6 py-3 rounded-2xl text-base font-bold shadow-xl founder-badge text-nexus-deep">
                                 Fundador & Visionário
                             </div>
                         </div>

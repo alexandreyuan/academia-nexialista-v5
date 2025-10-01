@@ -42,24 +42,18 @@
     <script>
         (function(){
             try {
-                // Verificar se o usuário está autenticado
-                const currentUser = localStorage.getItem('currentUser');
-                if (!currentUser) {
-                    window.location.href = 'members.html';
-                    return;
+                var allowed = false;
+                if (window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function') {
+                    allowed = window.NexialistaAuth.isAdmin();
                 }
-                
-                const user = JSON.parse(currentUser);
-                const isAdmin = (user.role === 'admin' || user.role === 'founder');
-                
-                // Verificação adicional com NexialistaAuth
-                const authCheck = window.NexialistaAuth && typeof window.NexialistaAuth.isAdmin === 'function' && window.NexialistaAuth.isAdmin();
-                
-                if (!isAdmin && !authCheck) {
+                // Endurecer gate: também validar e-mail autorizado e role explícita
+                var u = window.NexialistaAuth && window.NexialistaAuth.currentUser;
+                var emailOk = u && Array.isArray(window.AUTHORIZED_ADMINS) && window.AUTHORIZED_ADMINS.includes(u.email);
+                var roleOk = u && (u.role === 'admin' || u.role === 'founder');
+                if (!(allowed && emailOk && roleOk)) {
                     window.location.href = 'members-dashboard.html';
                 }
             } catch (e) {
-                console.error('Erro na verificação de admin:', e);
                 window.location.href = 'members-dashboard.html';
             }
         })();
@@ -78,15 +72,29 @@
                     <span class="font-playfair font-semibold text-xl text-gold-experience">Agentes IA</span>
                 </div>
                 <div class="flex items-center space-x-4">
-                    <a href="members-dashboard.html" class="text-digital-clarity hover:text-gold-experience transition-colors flex items-center">
-                        <i class="fas fa-arrow-left mr-2"></i>Dashboard
-                    </a>
+                    
                     <button onclick="showApiSettings()" class="text-digital-clarity hover:text-gold-experience transition-colors">
                         <i class="fas fa-cog mr-2"></i>APIs
+                    </button>
+                    <button onclick="manualSyncNow()" class="text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-sync-now" title="Sincronizar agora com o servidor">
+                        <i class="fas fa-rotate mr-2"></i>Sincronizar agora
+                    </button>
+                    <button onclick="adminBackfillFromLocal()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-backfill" title="Migrar agentes do navegador para o servidor">
+                        <i class="fas fa-cloud-upload-alt mr-2"></i>Migrar do navegador
+                    </button>
+                    <button onclick="openExportModal()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-export" title="Exportar agentes (JSON)">
+                        <i class="fas fa-file-export mr-2"></i>Exportar JSON
+                    </button>
+                    <button onclick="openImportModal()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-import" title="Importar agentes (JSON)">
+                        <i class="fas fa-file-import mr-2"></i>Importar JSON
+                    </button>
+                    <button onclick="openApiDiagnostics()" class="hidden text-digital-clarity hover:text-gold-experience transition-colors md:inline-flex" id="btn-diagnostics" title="Diagnóstico da API">
+                        <i class="fas fa-stethoscope mr-2"></i>Diagnóstico API
                     </button>
                     <button onclick="createNewAgent()" class="bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-4 py-2 rounded-lg font-semibold transition-colors">
                         <i class="fas fa-plus mr-2"></i>Novo Agente
                     </button>
+
                 </div>
             </div>
         </div>
@@ -306,10 +314,10 @@
                                 <select id="agent-provider" name="provider" onchange="updateModelOptions()"
                                         class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none">
                                     <option value="">Selecione um provedor...</option>
-                                    <option value="google">Google</option>
-                                    <option value="openrouter">OpenRouter</option>
-                                    <option value="openai">OpenAI</option>
-                                    <option value="groq">Groq</option>
+                                    <option value="openai">OpenAI (GPT-4, GPT-3.5)</option>
+                                    <option value="anthropic">Anthropic (Claude)</option>
+                                    <option value="google">Google (Gemini)</option>
+                                    <option value="openrouter">OpenRouter (Múltiplos modelos)</option>
                                 </select>
                             </div>
                             <div>
@@ -343,18 +351,15 @@
                                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                     <div>
                                         <label class="block text-sm font-medium mb-2">
-                                            Temperatura 
-                                            <span class="text-gold-experience font-mono" id="temperature-value">0.7</span>
-                                            <span class="text-xs text-digital-clarity/60 ml-2">Criatividade das respostas</span>
+                                            Temperatura (0.0 - 1.0)
+                                            <span class="text-xs text-digital-clarity/60">Criatividade das respostas</span>
                                         </label>
                                         <input type="range" id="agent-temperature" name="temperature" 
-                                               min="0" max="2" step="0.1" value="0.7"
-                                               oninput="document.getElementById('temperature-value').textContent = this.value"
-                                               class="w-full h-2 bg-nexus-deep rounded-lg appearance-none cursor-pointer accent-gold-experience">
-                                        <div class="text-xs text-digital-clarity/60 mt-2 flex justify-between">
-                                            <span>🎯 Preciso (0.0)</span>
-                                            <span>⚖️ Balanceado (0.7)</span>
-                                            <span>🎨 Criativo (2.0)</span>
+                                               min="0" max="1" step="0.1" value="0.7"
+                                               class="w-full">
+                                        <div class="text-xs text-digital-clarity/60 mt-1">
+                                            <span>Preciso</span>
+                                            <span class="float-right">Criativo</span>
                                         </div>
                                     </div>
                                     <div>
@@ -386,7 +391,7 @@
                             <button type="button" onclick="testAgent()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                                 <i class="fas fa-flask mr-2"></i>Testar Agente
                             </button>
-                            <button type="button" onclick="saveAgent()" class="flex-1 bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
+                            <button type="submit" class="flex-1 bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
                                 <i class="fas fa-save mr-2"></i>Salvar Agente
                             </button>
                             <button type="button" onclick="deleteCurrentAgent()" id="btn-delete-agent" class="hidden bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
@@ -547,17 +552,17 @@
                                    placeholder="sk-...">
                         </div>
 
-                        <!-- Groq -->
+                        <!-- Anthropic -->
                         <div class="border border-gold-experience/20 rounded-lg p-4">
                             <div class="flex items-center space-x-3 mb-3">
-                                <div class="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
-                                    <i class="fas fa-bolt text-white text-sm"></i>
+                                <div class="w-8 h-8 bg-orange-600 rounded-full flex items-center justify-center">
+                                    <i class="fas fa-brain text-white text-sm"></i>
                                 </div>
-                                <h3 class="font-semibold">Groq</h3>
+                                <h3 class="font-semibold">Anthropic</h3>
                             </div>
-                            <input type="password" id="groq-key" name="groqKey" 
+                            <input type="password" id="anthropic-key" name="anthropicKey" 
                                    class="w-full px-4 py-3 bg-nexus-deep border border-gold-experience/30 rounded-lg text-digital-clarity placeholder-digital-clarity/50 focus:border-gold-experience focus:ring-1 focus:ring-gold-experience outline-none"
-                                   placeholder="gsk_...">
+                                   placeholder="sk-ant-...">
                         </div>
 
                         <!-- Google -->
@@ -591,7 +596,7 @@
                             <button type="button" onclick="testApiConnections()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-semibold transition-colors">
                                 <i class="fas fa-plug mr-2"></i>Testar Conexões
                             </button>
-                            <button type="button" onclick="saveApiSettings()" class="flex-1 bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
+                            <button type="submit" class="flex-1 bg-gold-experience hover:bg-gold-legacy text-nexus-deep px-6 py-3 rounded-lg font-semibold transition-colors">
                                 <i class="fas fa-save mr-2"></i>Salvar Configurações
                             </button>
                         </div>
@@ -604,9 +609,9 @@
     <!-- Page works without authentication - direct access enabled -->
 
     <!-- JavaScript -->
-    <script src="js/utils.js?v=13"></script>
-    <script src="js/prospera-memory.js?v=13"></script>
-    <script src="js/custom-agents.js?v=16"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/prospera-memory.js"></script>
+    <script src="js/custom-agents.js"></script>
     <script>
       // Exibir botões admin-only e log de diagnóstico de fetch
       (function(){
