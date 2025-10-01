@@ -1,0 +1,17 @@
+
+{
+  "name": "academia-nexialista-v2",
+  "version": "1.0.0",
+  "description": "Academia Nexialista - Plataforma de Agentes IA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "keywords": ["nexialista", "ai", "agents"],
+  "author": "Alexandre Yuan",
+  "license": "MIT"
+}
