@@ -6,6 +6,7 @@
     <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
+    <meta name="version" content="1.3">
     <title>Academia Nexialista | Agentes de IA</title>
     
     <!-- Favicons -->
@@ -213,7 +214,7 @@
         })();
 
         // Check authentication (server-first compat)
-        function checkAuth() {
+        async function checkAuth() {
             // 1) Tentar sessão do Auth System
             if (window.NexialistaAuth && typeof window.NexialistaAuth.isLoggedIn==='function' && window.NexialistaAuth.isLoggedIn()) {
                 const u = window.NexialistaAuth.currentUser;
@@ -233,7 +234,9 @@
                 } catch(e) { window.location.href='members.html'; return; }
             }
             document.getElementById('user-plan').textContent = getPlanDisplayName(currentUser.plan);
-            loadApiKeys();
+            
+            // Load API keys first (await), then load agents
+            await loadApiKeys();
             loadAgents();
             loadConversationHistory();
         }
@@ -261,32 +264,78 @@
             localStorage.setItem(`nexialista_history_${currentUser.email}`, JSON.stringify(conversationHistory));
         }
 
-        // Load API keys
-        function loadApiKeys(){
-            try { apiKeys = JSON.parse(localStorage.getItem('custom_agents_api_keys')||'{}'); } catch { apiKeys = {}; }
+        // Load API keys from database
+        async function loadApiKeys(){
+            try {
+                const response = await fetch(buildApiUrl('tables/custom_agents_api_keys'));
+                if (response.ok) {
+                    const keys = await response.json();
+                    console.log('API Keys loaded:', keys.length, 'keys');
+                    
+                    // Convert array to object { provider: key }
+                    apiKeys = {};
+                    keys.forEach(keyData => {
+                        apiKeys[keyData.provider] = keyData.api_key;
+                    });
+                    
+                    console.log('API Keys available for:', Object.keys(apiKeys).join(', '));
+                } else {
+                    console.warn('Failed to load API keys, using empty object');
+                    apiKeys = {};
+                }
+            } catch (error) {
+                console.error('Error loading API keys:', error);
+                apiKeys = {};
+            }
         }
 
         // Load agents from server (server-first)
         async function loadAgents() {
             const debug = /[?&]debug=1/.test(window.location.search);
+            
+            // Check if there's a specific agent ID in URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const specificAgentId = urlParams.get('agent');
 
             let __fetchStatus = 'pending'; let __fetchError = ''; let __path = 'relative';
             try {
                 const noCache = Date.now();
-                let res = await fetch(buildApiUrl(`tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
-                if (!res.ok) {
-                    __path = 'absolute';
-                    res = await fetch(buildApiUrl(`/tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
-                }
-                __fetchStatus = `HTTP ${res.status}`;
-                let list = [];
-                if (res.ok) {
-                    const json = await res.json();
-                    list = (json.data || []).filter(a => a && a.product === 'academia-nexialista' && (a.isActive !== false));
+                
+                // If specific agent requested, load only that one
+                if (specificAgentId) {
+                    console.log('Loading specific agent:', specificAgentId);
+                    let res = await fetch(buildApiUrl(`tables/custom_agents/${specificAgentId}?_=${noCache}`), { cache: 'no-store' });
+                    __fetchStatus = `HTTP ${res.status}`;
+                    
+                    if (res.ok) {
+                        const agent = await res.json();
+                        console.log('Agent loaded:', agent);
+                        agentsData = [agent];
+                    } else {
+                        __fetchError = await res.text();
+                        console.error('Error loading agent:', __fetchError);
+                        agentsData = [];
+                    }
                 } else {
-                    __fetchError = await res.text();
+                    // Load all agents
+                    let res = await fetch(buildApiUrl(`tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
+                    if (!res.ok) {
+                        __path = 'absolute';
+                        res = await fetch(buildApiUrl(`/tables/custom_agents?limit=1000&_=${noCache}`), { cache: 'no-store' });
+                    }
+                    __fetchStatus = `HTTP ${res.status}`;
+                    let list = [];
+                    if (res.ok) {
+                        const json = await res.json();
+                        // O servidor retorna array direto, não { data: [...] }
+                        list = (Array.isArray(json) ? json : (json.data || [])).filter(a => a && a.product === 'academia-nexialista' && (a.is_active !== false));
+                        console.log('All agents loaded:', list.length);
+                    } else {
+                        __fetchError = await res.text();
+                    }
+                    agentsData = list;
                 }
-                agentsData = list;
+                
                 window.__academiaFetchDiag = { status: __fetchStatus, error: __fetchError, path: __path };
                 if (debug) {
                     const banner = document.getElementById('loading-agents');
@@ -304,12 +353,39 @@
 
         // Helpers de planos (academia)
         function normalizePlans(agent){
-            const plans = Array.isArray(agent.accessiblePlans) && agent.accessiblePlans.length>0 ? agent.accessiblePlans : (agent.subscriptionLevel ? [agent.subscriptionLevel] : []);
+            // Suporta tanto camelCase quanto snake_case
+            const plans = Array.isArray(agent.accessible_plans) && agent.accessible_plans.length>0 
+                ? agent.accessible_plans 
+                : (Array.isArray(agent.accessiblePlans) && agent.accessiblePlans.length>0 
+                    ? agent.accessiblePlans 
+                    : (agent.subscriptionLevel ? [agent.subscriptionLevel] : []));
             return Array.from(new Set((plans||[]).map(p => (p||'').toLowerCase())));
         }
         function planRank(level){ return level==='vip'?3 : level==='premium'?2 : level==='basic'?1 : 0; }
         function getMinPlan(plans=[]){ if (!plans||plans.length===0) return 'basic'; let min='vip'; plans.forEach(p=>{ if (planRank(p)<planRank(min)) min=p; }); return min; }
         function planLabel(level){ return level==='vip'?'VIP' : level==='premium'?'premium' : 'básico'; }
+        
+        // Helper functions for tags
+        function getPlanBadge(level) {
+            const map = {
+                basic: { icon:'🔰', label:'Básico', color: 'bg-gray-600/20 text-gray-300 border-gray-500/30' },
+                premium: { icon:'💎', label:'Premium', color: 'bg-purple-600/20 text-purple-300 border-purple-500/30' },
+                vip: { icon:'🌟', label:'VIP', color: 'bg-yellow-600/20 text-yellow-300 border-yellow-500/30' }
+            };
+            const x = map[level] || { icon:'❓', label: level, color: 'bg-gray-600/20 text-gray-400 border-gray-500/30' };
+            return `<span class="inline-flex items-center px-2 py-1 ${x.color} border text-xs rounded-full">${x.icon} ${x.label}</span>`;
+        }
+
+        function getProductBadge(product) {
+            const products = {
+                'prospera-ia': { icon: '📈', label: 'Prospera-IA', color: 'bg-purple-600/20 text-purple-400 border-purple-500/30' },
+                'academia-nexialista': { icon: '🎓', label: 'Academia', color: 'bg-blue-600/20 text-blue-400 border-blue-500/30' },
+                'movimento-nexialista': { icon: '🌍', label: 'Movimento', color: 'bg-green-600/20 text-green-400 border-green-500/30' }
+            };
+            
+            const prod = products[product] || { icon: '📦', label: product || 'N/A', color: 'bg-gray-600/20 text-gray-400 border-gray-500/30' };
+            return `<span class="inline-flex items-center px-2 py-1 ${prod.color} border text-xs rounded-full">${prod.icon} ${prod.label}</span>`;
+        }
 
         // Display agents with access control (server-first)
         function displayAgents() {
@@ -348,6 +424,10 @@
             const hasKey = !!apiKeys[providerName];
             const required = getMinPlan(plans||[]);
 
+            // Product and plans tags
+            const productTag = getProductBadge(agent.product);
+            const planBadges = (plans || []).map(p => getPlanBadge(p)).join(' ');
+
             const card = document.createElement('div');
             card.className = `agent-card bg-nexus-power border border-gold-experience/30 rounded-xl p-6 relative ${!hasAccess ? 'locked' : ''}`;
             
@@ -362,7 +442,7 @@
                         <div class="w-12 h-12 bg-gold-experience/20 rounded-full flex items-center justify-center text-xl"> <i class="${agent.avatar||'fas fa-robot'}"></i> </div>
                         <div class="flex-1">
                             <h3 class="font-playfair font-bold text-lg text-gold-experience mb-1">${agent.name}</h3>
-                            <p class="text-xs text-digital-clarity/60 mb-3">${providerNice} • ${agent.model}</p>
+                            <div class="flex flex-wrap gap-2 mb-3">${productTag}${planBadges}</div>
                             <p class="text-digital-clarity/70 text-sm mb-4">${agent.description||''}</p>
                             <div class="flex items-center justify-between mb-4">${lockIcon}</div>
                             ${btn}
@@ -385,30 +465,51 @@
         // (Removido) Versão antiga do createAgentCard baseada em localStorage — substituída pela versão server-first acima.
 
         // Open chat with agent
-        function openChat(agentId) {
+        async function openChat(agentId) {
             currentAgent = agentsData.find(a => a.id === agentId);
             if (!currentAgent) return;
             
             // Update modal header
             document.getElementById('agent-name').textContent = currentAgent.name;
             (function(){
-                const p = (currentAgent.provider||'').toLowerCase();
-                const providerNice = p==='openrouter'?'OpenRouter':p==='google'?'Google Gemini':p==='anthropic'?'Anthropic':p==='openai'?'OpenAI':(currentAgent.provider||'IA');
-                const spec = currentAgent.category || `${providerNice} • ${currentAgent.model||''}`;
+                const spec = currentAgent.category || 'Agente Nexialista';
                 document.getElementById('agent-specialty').textContent = spec;
             })();
             document.getElementById('agent-avatar').innerHTML = `<i class="${currentAgent.avatar || 'fas fa-robot'} text-nexus-deep"></i>`;
             
-            // Load previous conversation if exists
+            // Load previous conversation from database (memória persistente)
             const chatMessages = document.getElementById('chat-messages');
             chatMessages.innerHTML = '';
             
-            if (conversationHistory[agentId]) {
-                conversationHistory[agentId].forEach(msg => {
-                    addMessageToChat(msg.content, msg.role === 'user');
-                });
-            } else {
-                // Initial greeting
+            const currentUser = (window.NexialistaAuth && window.NexialistaAuth.getCurrentUser) ? window.NexialistaAuth.getCurrentUser() : null;
+            let hasHistory = false;
+            
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                try {
+                    const history = await window.ProsperaMemory.loadAgentConversation(currentUser.email, agentId, 10);
+                    if (history && history.length > 0) {
+                        hasHistory = true;
+                        // Mostrar histórico no chat
+                        history.forEach(msg => {
+                            addMessageToChat(msg.message_content, msg.message_type === 'user');
+                        });
+                        // Inicializar conversationHistory para contexto local
+                        if (!conversationHistory[agentId]) conversationHistory[agentId] = [];
+                        history.forEach(msg => {
+                            conversationHistory[agentId].push({
+                                role: msg.message_type === 'user' ? 'user' : 'assistant',
+                                content: msg.message_content,
+                                timestamp: msg.created_at
+                            });
+                        });
+                    }
+                } catch (err) {
+                    console.warn('Erro ao carregar histórico do agente:', err);
+                }
+            }
+            
+            if (!hasHistory) {
+                // Initial greeting apenas se não houver histórico
                 addMessageToChat(`Olá! Eu sou ${currentAgent.name}, especialista em ${currentAgent.specialty}. Como posso expandir sua consciência hoje?`, false);
             }
             
@@ -434,6 +535,19 @@
             if (!conversationHistory[currentAgent.id]) conversationHistory[currentAgent.id] = [];
             conversationHistory[currentAgent.id].push({ role:'user', content: message, timestamp: new Date().toISOString() });
 
+            // Salvar mensagem do usuário no banco de dados (memória persistente)
+            const currentUser = (window.NexialistaAuth && window.NexialistaAuth.getCurrentUser) ? window.NexialistaAuth.getCurrentUser() : null;
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                await window.ProsperaMemory.saveInteraction(
+                    currentUser.email,
+                    currentAgent.id,
+                    currentAgent.name,
+                    'user',
+                    message,
+                    'academia-nexialista'
+                );
+            }
+
             const typingDiv = document.createElement('div');
             typingDiv.className = 'flex justify-start mb-4 typing-message';
             typingDiv.innerHTML = `<div class="bg-nexus-power border border-gold-experience/20 rounded-lg px-4 py-2 max-w-lg"><span class="text-digital-clarity/70 typing-indicator">Pensando</span></div>`;
@@ -445,6 +559,19 @@
                 typingDiv.remove();
                 addMessageToChat(response, false);
                 conversationHistory[currentAgent.id].push({ role:'assistant', content: response, timestamp: new Date().toISOString() });
+                
+                // Salvar resposta do agente no banco de dados (memória persistente)
+                if (currentUser && currentUser.email && window.ProsperaMemory) {
+                    await window.ProsperaMemory.saveInteraction(
+                        currentUser.email,
+                        currentAgent.id,
+                        currentAgent.name,
+                        'assistant',
+                        response,
+                        'academia-nexialista'
+                    );
+                }
+                
                 saveConversationHistory();
                 updateUserStats();
             } catch (e) {
@@ -458,10 +585,37 @@
             const key = apiKeys[provider];
             if (!key) throw new Error(`Chave API ausente para ${provider}`);
 
-            let systemPrompt = agent.systemPrompt || '';
+            let systemPrompt = agent.systemPrompt || agent.system_prompt || '';
             if (agent.knowledge) systemPrompt += `\n\nBase de Conhecimento:\n${agent.knowledge}`;
 
+            // Carregar contexto compartilhado do banco de dados (memória de todos os agentes)
+            const currentUser = (window.NexialistaAuth && window.NexialistaAuth.getCurrentUser) ? window.NexialistaAuth.getCurrentUser() : null;
+            if (currentUser && currentUser.email && window.ProsperaMemory) {
+                try {
+                    const sharedContext = await window.ProsperaMemory.loadSharedContext(
+                        currentUser.email, 
+                        'academia-nexialista', 
+                        15
+                    );
+                    if (sharedContext && sharedContext.length > 0) {
+                        const contextPrompt = window.ProsperaMemory.buildContextPrompt(sharedContext, 10);
+                        if (contextPrompt) {
+                            systemPrompt += contextPrompt;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Erro ao carregar contexto compartilhado:', e);
+                }
+            }
+
             const recent = (conversationHistory[agent.id]||[]).slice(-6);
+            
+            // Convert temperature and max_tokens to numbers
+            const temperature = parseFloat(agent.temperature) || 0.7;
+            const maxTokens = parseInt(agent.max_tokens || agent.maxTokens) || 2000;
+            
+            console.log('Calling API with:', { provider, model: agent.model, temperature, maxTokens });
+            
             if (provider==='openai' || provider==='openrouter'){
                 const endpoint = provider==='openrouter' ? 'https://openrouter.ai/api/v1/chat/completions' : 'https://api.openai.com/v1/chat/completions';
                 const res = await fetch(endpoint, {
@@ -474,8 +628,8 @@
                     body: JSON.stringify({
                         model: agent.model,
                         messages: [ {role:'system', content: systemPrompt}, ...recent, {role:'user', content: userMessage} ],
-                        temperature: agent.temperature || 0.7,
-                        max_tokens: agent.maxTokens || 1000
+                        temperature: temperature,
+                        max_tokens: maxTokens
                     })
                 });
                 if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
@@ -485,7 +639,7 @@
             if (provider==='anthropic'){
                 const res = await fetch('https://api.anthropic.com/v1/messages', {
                     method:'POST', headers:{ 'Content-Type':'application/json', 'x-api-key': key, 'anthropic-version':'2023-06-01' },
-                    body: JSON.stringify({ model: agent.model, max_tokens: agent.maxTokens||1000, temperature: agent.temperature||0.7, system: systemPrompt, messages:[{role:'user', content:userMessage}] })
+                    body: JSON.stringify({ model: agent.model, max_tokens: maxTokens, temperature: temperature, system: systemPrompt, messages:[{role:'user', content:userMessage}] })
                 });
                 if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
                 const data = await res.json();
@@ -494,10 +648,28 @@
             if (provider==='google'){
                 const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${agent.model}:generateContent?key=${key}`;
                 const prompt = `${systemPrompt}\n\nUser: ${userMessage}\nAssistant:`;
-                const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }], generationConfig:{ temperature: agent.temperature||0.7, maxOutputTokens: agent.maxTokens||1000 } }) });
+                const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ contents:[{ parts:[{ text: prompt }] }], generationConfig:{ temperature: temperature, maxOutputTokens: maxTokens } }) });
                 if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
                 const data = await res.json();
                 return data.candidates?.[0]?.content?.parts?.[0]?.text || 'Resposta vazia do provedor';
+            }
+            if (provider==='groq'){
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method:'POST',
+                    headers:{
+                        'Content-Type':'application/json',
+                        'Authorization': `Bearer ${key}`
+                    },
+                    body: JSON.stringify({
+                        model: agent.model,
+                        messages: [ {role:'system', content: systemPrompt}, ...recent, {role:'user', content: userMessage} ],
+                        temperature: temperature,
+                        max_tokens: maxTokens
+                    })
+                });
+                if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+                const data = await res.json();
+                return data.choices?.[0]?.message?.content || 'Resposta vazia do provedor';
             }
             throw new Error('Provedor não suportado');
         }

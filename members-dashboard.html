@@ -103,6 +103,9 @@
                             <span id="user-name" class="block text-sm font-semibold">Usuário</span>
                             <span id="user-email" class="block text-xs text-digital-clarity/60">email@example.com</span>
                         </div>
+                        <button onclick="clearMyHistory()" class="p-2 hover:bg-red-500/10 rounded-lg transition-colors" title="Limpar Histórico de Conversas">
+                            <i class="fas fa-trash-alt text-red-400"></i>
+                        </button>
                         <button onclick="logout()" class="p-2 hover:bg-gold-experience/10 rounded-lg transition-colors" title="Sair">
                             <i class="fas fa-sign-out-alt text-gold-experience"></i>
                         </button>
@@ -224,6 +227,32 @@
             </div>
         </div>
 
+        <!-- Admin/Founder Section (Hidden by default) -->
+        <div id="admin-section" class="mb-10 hidden">
+            <div class="bg-gradient-to-r from-red-900/30 to-purple-900/30 border border-red-500/30 rounded-2xl p-6">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-14 h-14 bg-red-500/20 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-cog text-2xl text-red-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-playfair font-bold text-red-400 mb-1">
+                                Configuração de Agentes IA
+                            </h3>
+                            <p class="text-digital-clarity/70 text-sm">
+                                Crie, edite e gerencie agentes customizados do ecossistema Nexialista
+                            </p>
+                        </div>
+                    </div>
+                    <button onclick="navigateToAgentConfig()" 
+                            class="px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold transition-colors flex items-center space-x-2">
+                        <i class="fas fa-tools"></i>
+                        <span>Gerenciar Agentes</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Stats -->
         <div class="bg-nexus-power/50 backdrop-blur-sm border border-gold-experience/20 rounded-2xl p-6">
             <h2 class="text-lg font-playfair font-bold text-gold-experience mb-4">
@@ -283,20 +312,35 @@
             const user = JSON.parse(currentUserStr);
             document.getElementById('user-name').textContent = user.name || 'Usuário';
             document.getElementById('user-email').textContent = user.email;
-            document.getElementById('user-plan').textContent = getPlanDisplayName(user.plan);
+            document.getElementById('user-plan').textContent = getPlanDisplayName(user.subscription, user.role);
+            
+            // Show admin section for founder and admin
+            if (user.role === 'founder' || user.role === 'admin') {
+                const adminSection = document.getElementById('admin-section');
+                if (adminSection) {
+                    adminSection.classList.remove('hidden');
+                }
+            }
             
             // Load user stats
             loadUserStats(user.email);
         }
 
         // Get plan display name
-        function getPlanDisplayName(plan) {
+        function getPlanDisplayName(subscription, role) {
+            // Prioridade para role (founder/admin)
+            if (role === 'founder') return 'Founder';
+            if (role === 'admin') return 'Admin';
+            
             const planNames = {
+                'vip': 'VIP',
+                'premium': 'Premium',
+                'basic': 'Básico',
                 'nexus-explorer': 'Nexus Explorer',
                 'nexus-master': 'Nexus Master',
                 'nexus-infinity': 'Nexus Infinity'
             };
-            return planNames[plan] || 'Plano Básico';
+            return planNames[subscription] || 'Básico';
         }
 
         // Load user stats
@@ -326,6 +370,52 @@
 
         function navigateToProsperaIA() {
             window.location.href = 'prospera-ia.html';
+        }
+
+        function navigateToAgentConfig() {
+            window.location.href = 'custom-agents.html';
+        }
+
+        // Clear conversation history function
+        async function clearMyHistory() {
+            const user = window.NexialistaAuth?.currentUser;
+            if (!user || !user.email) {
+                alert('Erro: usuário não identificado');
+                return;
+            }
+
+            const confirmMsg = `⚠️ ATENÇÃO!\n\nVocê está prestes a deletar TODAS as suas conversas com os agentes da Academia Nexialista e Prospera-IA.\n\nEsta ação é IRREVERSÍVEL!\n\nTotal de conversas será perdido permanentemente.\n\nDeseja continuar?`;
+            
+            if (!confirm(confirmMsg)) {
+                return;
+            }
+
+            // Second confirmation for safety
+            if (!confirm('Tem certeza absoluta? Esta é sua última chance antes de deletar tudo!')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/conversations/${encodeURIComponent(user.email)}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.success) {
+                    alert(`✅ Sucesso!\n\n${data.deleted} conversas foram deletadas.\n\nSeu histórico foi limpo completamente.`);
+                    // Opcional: recarregar a página
+                    // window.location.reload();
+                } else {
+                    alert(`❌ Erro ao deletar conversas:\n${data.error || 'Erro desconhecido'}`);
+                }
+            } catch (error) {
+                console.error('Erro ao limpar histórico:', error);
+                alert('❌ Erro de conexão ao tentar deletar conversas. Tente novamente.');
+            }
         }
 
         // Logout function
